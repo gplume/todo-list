@@ -96,6 +96,11 @@ func main() {
 
 	r := gin.Default()
 
+	r.GET("/", listTodos)
+	r.POST("/post-todo", addTodo)
+	r.POST("/update-todo", updateTodo)
+	r.DELETE("/delete-todo", deleteTodo)
+
 	bind := fmt.Sprintf(":%d", app.cfg.ServerPort)
 
 	if app.cfg.SSLEnabled {

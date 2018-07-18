@@ -1,6 +1,10 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
+	"time"
+
 	"github.com/boltdb/bolt"
 )
 
@@ -45,22 +49,58 @@ func getBucket(db *bolt.DB, bucketName string) (b *bolt.Bucket, err error) {
 *************** METHODS ****************
 ***************************************/
 
-func (db *boltDB) createTodo(*todo) error {
-
-	return nil
+func (db *boltDB) createTodo(td *todo) error {
+	return db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket(db.todos)
+		buf, err := json.Marshal(td)
+		if err != nil {
+			return fmt.Errorf("todo cannot be properly encoded: %v", err)
+		}
+		// Persist bytes to todos bucket.
+		// The deadline date is used as key so that is automatically sorted
+		// thanks to bolt database btree pagination system
+		// One major drawback is that if the frontend API allow to change this date
+		// we should cache it in the update object so we can find the correct item
+		return b.Put([]byte(td.Deadline.Format(time.RFC3339)), buf)
+	})
 }
 
-func (db *boltDB) listAllTodos() ([]*todo, error) {
-
-	return nil, nil
+func (db *boltDB) listTodos() ([]*todo, error) {
+	todos := make([]*todo, 0)
+	return todos, db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket(db.todos)
+		return b.ForEach(func(k, v []byte) error {
+			if v != nil {
+				var td *todo
+				if err := json.Unmarshal(v, &td); err != nil {
+					return fmt.Errorf("error parsing todos: %v", err)
+				}
+				if v != nil {
+					todos = append(todos, td)
+				}
+			}
+			return nil
+		})
+	})
 }
 
 func (db *boltDB) updateTodo(td *todo) error {
-
-	return nil
+	return db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket(db.todos)
+		buf, err := json.Marshal(td)
+		if err != nil {
+			return fmt.Errorf("todo cannot be properly encoded: %v", err)
+		}
+		return b.Put([]byte(td.Deadline.Format(time.RFC3339)), buf)
+	})
 }
 
 func (db *boltDB) deleteTodo(td *todo) error {
-
-	return nil
+	return db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket(db.todos)
+		if err := b.Delete([]byte(td.Deadline.Format(time.RFC3339))); err != nil {
+			return fmt.Errorf("todo cannot be properly deleted: %v", err)
+		}
+		return nil
+	})
 }

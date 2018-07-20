@@ -9,5 +9,5 @@ type todosMapper interface {
 	createTodo(*todo) error
 	listTodos() ([]*todo, error)
 	updateTodo(*todo) error
-	deleteTodo(*todo) error
+	deleteTodo(string) error
 }

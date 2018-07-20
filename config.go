@@ -15,6 +15,7 @@ type config struct {
 	DBType        string `env:"key=DB_TYPE required=true"`
 	DBDirectory   string `env:"key=DB_DIRECTORY default=db"`
 	DBName        string `env:"key=DB_NAME required=true"`
+	DBTestName    string `env:"key=DB_TEST_NAME required=true"`
 }
 
 func newConfig() (*config, error) {

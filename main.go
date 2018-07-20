@@ -19,10 +19,15 @@ type application struct {
 	datamapper dataMapper
 }
 
-func newApp() (*application, error) {
+func newApp(testing bool) (*application, error) {
 
 	var err error
 	app = &application{}
+
+	err = godotenv.Load("config/config.env")
+	if err != nil {
+		return nil, fmt.Errorf("rrror loading config.env file: %v", err)
+	}
 
 	app.cfg, err = newConfig()
 	if err != nil {
@@ -32,6 +37,10 @@ func newApp() (*application, error) {
 	if err := os.MkdirAll(path.Join(getDefaultBaseDir(), app.cfg.DBDirectory), 0777); err != nil && !os.IsExist(err) {
 		return nil, err
 	}
+	databaseName := app.cfg.DBName
+	if testing {
+		databaseName = app.cfg.DBTestName
+	}
 
 	switch app.cfg.DBType {
 	// there is a switch here if one should try another database system
@@ -39,7 +48,7 @@ func newApp() (*application, error) {
 	// for example add "pgsql" here and write all the corresponding methods in a pgsl_datamapper file
 	case "bolt":
 		var db *bolt.DB
-		db, err = bolt.Open(fmt.Sprintf("%s/%s", app.cfg.DBDirectory, app.cfg.DBName), 0660, nil)
+		db, err = bolt.Open(fmt.Sprintf("%s/%s", app.cfg.DBDirectory, databaseName), 0660, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -54,6 +63,27 @@ func newApp() (*application, error) {
 	return app, nil
 }
 
+func mainEngineAndRoutes() *gin.Engine {
+	// Creates a router without any middleware by default
+	r := gin.New()
+
+	// Global middleware
+	// Logger middleware will write the logs to gin.DefaultWriter even if you set with GIN_MODE=release.
+	// By default gin.DefaultWriter = os.Stdout
+	r.Use(gin.Logger())
+
+	// Recovery middleware recovers from any panics and writes a 500 if there was one.
+	r.Use(gin.Recovery())
+
+	// routes
+	r.GET("/list", listTodos)
+	r.POST("/post-todo", addTodo)
+	r.PUT("/update-todo", updateTodo)
+	r.DELETE("/delete-todo/:key", deleteTodo)
+
+	return r
+}
+
 func main() {
 	fmt.Println("*****************************************************************")
 	fmt.Println("*****************  Welcome to ToDoList API!  ********************")
@@ -61,13 +91,8 @@ func main() {
 
 	gin.DisableConsoleColor()
 	// gin.DefaultWriter = colorable.NewColorableStdout() // for windows git bash especially
-
-	err := godotenv.Load("config/config.env")
-	if err != nil {
-		log.Fatalf("Error loading config.env file: %v", err)
-	}
-
-	app, err = newApp()
+	var err error
+	app, err = newApp(false)
 	if err != nil {
 		log.Fatalf("Error initializing Application : %v", err)
 	}
@@ -77,6 +102,7 @@ func main() {
 		fmt.Println("******************  APP IN PRODUCTION MODE  *********************")
 	} else {
 		fmt.Println("*******************  app in dev mode  ***************************")
+
 	}
 
 	switch app.cfg.FrameWorkMode {
@@ -94,14 +120,10 @@ func main() {
 		fmt.Println("----> gin framework is in DEBUG MODE")
 	}
 
-	r := gin.Default()
-
-	r.GET("/", listTodos)
-	r.POST("/post-todo", addTodo)
-	r.POST("/update-todo", updateTodo)
-	r.DELETE("/delete-todo", deleteTodo)
+	r := mainEngineAndRoutes()
 
 	bind := fmt.Sprintf(":%d", app.cfg.ServerPort)
+	log.Printf("----> API is Running on: %s ", bind)
 
 	if app.cfg.SSLEnabled {
 		err = r.RunTLS(bind, app.cfg.SSLPub, app.cfg.SSLKey)

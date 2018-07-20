@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"net/http"
 	"time"
 
@@ -41,14 +42,17 @@ func (td *todo) validator() (bool, map[string]string) {
 func addTodo(c *gin.Context) {
 	var todo *todo
 	if err := c.BindJSON(&todo); err != nil {
+		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	if ok, errors := todo.validator(); !ok {
+		log.Println(errors)
 		c.JSON(http.StatusBadRequest, errors)
 		return
 	}
 	if err := app.datamapper.createTodo(todo); err != nil {
+		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -58,14 +62,17 @@ func addTodo(c *gin.Context) {
 func updateTodo(c *gin.Context) {
 	var todo *todo
 	if err := c.BindJSON(&todo); err != nil {
+		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	if ok, errors := todo.validator(); !ok {
+		log.Println(errors)
 		c.JSON(http.StatusBadRequest, errors)
 		return
 	}
 	if err := app.datamapper.updateTodo(todo); err != nil {
+		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -73,22 +80,20 @@ func updateTodo(c *gin.Context) {
 }
 
 func deleteTodo(c *gin.Context) {
-	var todo *todo
-	if err := c.BindJSON(&todo); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+	todoKey := c.Param("key")
 
-	if err := app.datamapper.deleteTodo(todo); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if err := app.datamapper.deleteTodo(todoKey); err != nil {
+		log.Println("app.datamapper.deleteTodo() error: ", err)
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, todo)
+	c.JSON(http.StatusNoContent, nil)
 }
 
 func listTodos(c *gin.Context) {
 	todos, err := app.datamapper.listTodos()
 	if err != nil {
+		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

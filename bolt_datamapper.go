@@ -59,8 +59,10 @@ func (db *boltDB) createTodo(td *todo) error {
 		// Persist bytes to todos bucket.
 		// The deadline date is used as key so that is automatically sorted
 		// thanks to bolt database btree pagination system
-		// One major drawback is that if the frontend API allow to change this date
-		// we should cache it in the update object so we can find the correct item
+		// One major drawback of that is if the frontend API allow to change this date
+		// we should cache it in the updated object so we can find the correct item to replace
+		// (delete old one then create new one, limitation of the choosen ordered date key for value in DB)
+		// as we cannot modify a key...
 		return b.Put([]byte(td.Deadline.Format(time.RFC3339)), buf)
 	})
 }
@@ -95,10 +97,10 @@ func (db *boltDB) updateTodo(td *todo) error {
 	})
 }
 
-func (db *boltDB) deleteTodo(td *todo) error {
+func (db *boltDB) deleteTodo(todoKey string) error {
 	return db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(db.todos)
-		if err := b.Delete([]byte(td.Deadline.Format(time.RFC3339))); err != nil {
+		if err := b.Delete([]byte(todoKey)); err != nil {
 			return fmt.Errorf("todo cannot be properly deleted: %v", err)
 		}
 		return nil

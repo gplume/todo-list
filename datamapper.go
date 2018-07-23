@@ -6,8 +6,9 @@ type dataMapper interface {
 }
 
 type todosMapper interface {
-	createTodo(*todo) error
+	saveTodo(*todo) error
 	listTodos() ([]*todo, error)
+	getTodo(int) (*todo, error)
 	updateTodo(*todo) error
-	deleteTodo(string) error
+	deleteTodo(int) error
 }

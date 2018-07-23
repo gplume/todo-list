@@ -10,6 +10,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"os"
+	"strconv"
 	"testing"
 	"time"
 
@@ -36,17 +37,16 @@ func TestMainEngineAndRoutes(t *testing.T) {
 
 	// CREATE: /post-todo
 	w1 := httptest.NewRecorder()
-	newTodo1 := &todo{
-		Creation:    time.Now(),
+	newTodo := &todo{
 		Deadline:    time.Now().AddDate(0, 0, 1), // +1 day
 		Title:       "New task",
 		Description: "Here's the description of the new task...",
 		Priority:    urgent,
 	}
-	buf, err := json.Marshal(newTodo1)
+	buf, err := json.Marshal(newTodo)
 	assert.Nil(err)
 	body := bytes.NewBuffer(buf)
-	req, err := http.NewRequest("POST", "/post-todo", body)
+	req, err := http.NewRequest("POST", "/todo/", body)
 	assert.Nil(err)
 	router.ServeHTTP(w1, req)
 	assert.Equal(http.StatusCreated, w1.Code)
@@ -54,7 +54,7 @@ func TestMainEngineAndRoutes(t *testing.T) {
 
 	// RETREIVE: /list
 	w2 := httptest.NewRecorder()
-	req2, err := http.NewRequest("GET", "/list", nil)
+	req2, err := http.NewRequest("GET", "/todo/", nil)
 	assert.Nil(err)
 	router.ServeHTTP(w2, req2)
 	assert.Equal(http.StatusOK, w2.Code)
@@ -66,22 +66,22 @@ func TestMainEngineAndRoutes(t *testing.T) {
 	err = json.Unmarshal(getbody, &e)
 	assert.Nil(err)
 	firstTodo := e[0]
-	assert.Equal(firstTodo.Creation.Format(time.RFC3339), newTodo1.Creation.Format(time.RFC3339))
-	assert.Equal(firstTodo.Deadline.Format(time.RFC3339), newTodo1.Deadline.Format(time.RFC3339))
-	assert.Equal(firstTodo.Title, newTodo1.Title)
-	assert.Equal(firstTodo.Description, newTodo1.Description)
-	assert.Equal(firstTodo.Priority, newTodo1.Priority)
+	newTodo.ID = firstTodo.ID
+	assert.Equal(firstTodo.Deadline.Format(time.RFC3339), newTodo.Deadline.Format(time.RFC3339))
+	assert.Equal(firstTodo.Title, newTodo.Title)
+	assert.Equal(firstTodo.Description, newTodo.Description)
+	assert.Equal(firstTodo.Priority, newTodo.Priority)
 
 	// UPDATE: /update-todo
-	newTodo1.Title = "Updated task title"
-	newTodo1.Description = "Updated task description"
-	newTodo1.Priority = low
-	buf3, err := json.Marshal(newTodo1)
+	newTodo.Title = "Updated task title"
+	newTodo.Description = "Updated task description"
+	newTodo.Priority = low
+	buf3, err := json.Marshal(newTodo)
 	assert.Nil(err)
 	body3 := bytes.NewBuffer(buf3)
 
 	w3 := httptest.NewRecorder()
-	req3, err := http.NewRequest("PUT", "/update-todo", body3)
+	req3, err := http.NewRequest("PUT", "/todo/", body3)
 	assert.Nil(err)
 	router.ServeHTTP(w3, req3)
 	assert.Equal(http.StatusOK, w3.Code)
@@ -91,17 +91,16 @@ func TestMainEngineAndRoutes(t *testing.T) {
 	var updated *todo
 	err = json.Unmarshal(updatedBody, &updated)
 	assert.Nil(err)
-
-	assert.Equal(updated.Creation.Format(time.RFC3339), newTodo1.Creation.Format(time.RFC3339))
-	assert.Equal(updated.Deadline.Format(time.RFC3339), newTodo1.Deadline.Format(time.RFC3339))
-	assert.Equal(updated.Title, newTodo1.Title)
-	assert.Equal(updated.Description, newTodo1.Description)
-	assert.Equal(updated.Priority, newTodo1.Priority)
+	assert.Equal(updated.Creation.Format(time.RFC3339), newTodo.Creation.Format(time.RFC3339))
+	assert.Equal(updated.Deadline.Format(time.RFC3339), newTodo.Deadline.Format(time.RFC3339))
+	assert.Equal(updated.Title, newTodo.Title)
+	assert.Equal(updated.Description, newTodo.Description)
+	assert.Equal(updated.Priority, newTodo.Priority)
 
 	// DELETE: /delete-todo
 	w4 := httptest.NewRecorder()
-	todoKey := updated.Deadline.Format(time.RFC3339)
-	url, err := url.Parse("/delete-todo/" + todoKey)
+	todoKey := strconv.Itoa(updated.ID)
+	url, err := url.Parse("/todo/" + todoKey)
 	assert.Nil(err)
 	req4, err := http.NewRequest("DELETE", url.EscapedPath(), nil)
 	assert.Nil(err)

@@ -1,9 +1,10 @@
 package main
 
 import (
+	"encoding/binary"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"time"
 
 	"github.com/boltdb/bolt"
 )
@@ -45,25 +46,30 @@ func getBucket(db *bolt.DB, bucketName string) (b *bolt.Bucket, err error) {
 	return
 }
 
+func itob(v int) []byte {
+	b := make([]byte, 8)
+	binary.BigEndian.PutUint64(b, uint64(v))
+	return b
+}
+
 /***************************************
 *************** METHODS ****************
 ***************************************/
 
-func (db *boltDB) createTodo(td *todo) error {
+func (db *boltDB) saveTodo(td *todo) error {
 	return db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(db.todos)
+		if td.ID == 0 {
+			id, _ := b.NextSequence()
+			td.ID = int(id)
+		}
 		buf, err := json.Marshal(td)
 		if err != nil {
 			return fmt.Errorf("todo cannot be properly encoded: %v", err)
 		}
 		// Persist bytes to todos bucket.
-		// The deadline date is used as key so that is automatically sorted
-		// thanks to bolt database btree pagination system
-		// One major drawback of that is if the frontend API allow to change this date
-		// we should cache it in the updated object so we can find the correct item to replace
-		// (delete old one then create new one, limitation of the choosen ordered date key for value in DB)
-		// as we cannot modify a key...
-		return b.Put([]byte(td.Deadline.Format(time.RFC3339)), buf)
+
+		return b.Put(itob(td.ID), buf)
 	})
 }
 
@@ -86,21 +92,39 @@ func (db *boltDB) listTodos() ([]*todo, error) {
 	})
 }
 
+func (db *boltDB) getTodo(todoKey int) (*todo, error) {
+	var todo *todo
+	return todo, db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket(db.todos)
+		td := b.Get(itob(todoKey))
+		if td == nil {
+			return fmt.Errorf("There's no todo with that ID! (%v)", todoKey)
+		}
+		return json.Unmarshal(td, &todo)
+	})
+}
+
+// same as saveTodo() but stays here for compatibility reason and others db systems.
+// boldDB key/value technology obviously don't need that
+// an additionnal ID check is done for data integrity
 func (db *boltDB) updateTodo(td *todo) error {
 	return db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(db.todos)
+		if td.ID == 0 {
+			return errors.New("cannot update an ID==0 todo")
+		}
 		buf, err := json.Marshal(td)
 		if err != nil {
 			return fmt.Errorf("todo cannot be properly encoded: %v", err)
 		}
-		return b.Put([]byte(td.Deadline.Format(time.RFC3339)), buf)
+		return b.Put(itob(td.ID), buf)
 	})
 }
 
-func (db *boltDB) deleteTodo(todoKey string) error {
+func (db *boltDB) deleteTodo(todoKey int) error {
 	return db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(db.todos)
-		if err := b.Delete([]byte(todoKey)); err != nil {
+		if err := b.Delete(itob(todoKey)); err != nil {
 			return fmt.Errorf("todo cannot be properly deleted: %v", err)
 		}
 		return nil

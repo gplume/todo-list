@@ -1,14 +1,18 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"sort"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
 type todo struct {
+	ID          int        `json:"id"`
 	Creation    time.Time  `json:"creationDate"`
 	Deadline    time.Time  `json:"deadlineDate"` // mandatory at insert
 	Title       string     `json:"title"`        // mandatory at insert
@@ -46,12 +50,13 @@ func addTodo(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	todo.Creation = time.Now()
 	if ok, errors := todo.validator(); !ok {
 		log.Println(errors)
 		c.JSON(http.StatusBadRequest, errors)
 		return
 	}
-	if err := app.datamapper.createTodo(todo); err != nil {
+	if err := app.datamapper.saveTodo(todo); err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -79,10 +84,32 @@ func updateTodo(c *gin.Context) {
 	c.JSON(http.StatusOK, todo)
 }
 
+func getTodo(c *gin.Context) {
+	todoKey := c.Param("key")
+	intKey, err := strconv.Atoi(todoKey)
+	if err != nil {
+		msg := fmt.Sprintf("error parsing todo key: %v", err)
+		log.Println(msg)
+		c.JSON(http.StatusBadRequest, gin.H{"error": msg})
+	}
+	todo, err := app.datamapper.getTodo(intKey)
+	if err != nil {
+		log.Println("app.datamapper.getTodo() error: ", err)
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, todo)
+}
+
 func deleteTodo(c *gin.Context) {
 	todoKey := c.Param("key")
-
-	if err := app.datamapper.deleteTodo(todoKey); err != nil {
+	intKey, err := strconv.Atoi(todoKey)
+	if err != nil {
+		msg := fmt.Sprintf("error parsing todo key: %v", err)
+		log.Println(msg)
+		c.JSON(http.StatusBadRequest, gin.H{"error": msg})
+	}
+	if err := app.datamapper.deleteTodo(intKey); err != nil {
 		log.Println("app.datamapper.deleteTodo() error: ", err)
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -91,11 +118,26 @@ func deleteTodo(c *gin.Context) {
 }
 
 func listTodos(c *gin.Context) {
+	sorting := c.DefaultQuery("sort", "desc")
 	todos, err := app.datamapper.listTodos()
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
+	}
+	switch sorting {
+	case "asc":
+		sort.Slice(todos, func(i, j int) bool {
+			return todos[i].Deadline.Before(todos[j].Deadline)
+		})
+	case "priority":
+		sort.Slice(todos, func(i, j int) bool {
+			return todos[i].Priority < todos[j].Priority
+		})
+	default: // "desc"
+		sort.Slice(todos, func(i, j int) bool {
+			return todos[i].Deadline.After(todos[j].Deadline)
+		})
 	}
 	c.JSON(http.StatusOK, todos)
 }

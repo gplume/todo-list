@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net/http"
 	"os"
 	"path"
+	"time"
 
 	"github.com/boltdb/bolt"
 	"github.com/gin-gonic/gin"
@@ -140,6 +142,13 @@ func main() {
 			log.Fatal("ListenAndServe: ", err)
 		}
 	} else {
-		r.Run(bind)
+		s := &http.Server{
+			Addr:           bind,
+			Handler:        r,
+			ReadTimeout:    10 * time.Second,
+			WriteTimeout:   10 * time.Second,
+			MaxHeaderBytes: 1 << 20,
+		}
+		s.ListenAndServe()
 	}
 }

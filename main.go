@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path"
@@ -94,6 +95,11 @@ func main() {
 
 	gin.DisableConsoleColor()
 	// gin.DefaultWriter = colorable.NewColorableStdout() // for windows git bash especially
+
+	// logs: MultiWriter to Stout and file
+	myfile, _ := os.Create("server.log")
+	gin.DefaultWriter = io.MultiWriter(myfile, os.Stdout)
+
 	var err error
 	app, err = newApp(false)
 	if err != nil {

@@ -31,3 +31,7 @@ http://192.168.99.100:8000/todo/ \
 -H 'content-type: application/json' \
 -d '{ "id": 2, "deadlineDate": "2018-07-27T17:00:00+00:00", "title": "Second task title", "description": "Second task description", "priority": 2}'
 ```
+
+```
+docker build -t test .; docker run --rm -it -p 8000:8000 test
+```

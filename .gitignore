@@ -2,3 +2,4 @@ db/*
 todo-list
 todo-list.exe
 debug.test
+server.log

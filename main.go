@@ -76,13 +76,13 @@ func mainEngineAndRoutes() *gin.Engine {
 	// Recovery middleware recovers from any panics and writes a 500 if there was one.
 	r.Use(gin.Recovery())
 
-	// group (will add /todo to all routes below:
+	// group (will add /todo to all routes endpoints below:
 	api := r.Group("/todo")
-	// routes
-	api.GET("/", listTodos)
+	// API endpoints (group suffix is added automatically)
+	api.GET("", listTodos)
 	api.GET("/:key", getTodo)
-	api.POST("/", addTodo)
-	api.PUT("/", updateTodo)
+	api.POST("", addTodo)
+	api.PUT("", updateTodo)
 	api.DELETE("/:key", deleteTodo)
 
 	return r

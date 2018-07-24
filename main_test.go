@@ -46,7 +46,7 @@ func TestMainEngineAndRoutes(t *testing.T) {
 	buf, err := json.Marshal(newTodo)
 	assert.Nil(err)
 	body := bytes.NewBuffer(buf)
-	req, err := http.NewRequest("POST", "/todo/", body)
+	req, err := http.NewRequest("POST", "/todo", body)
 	assert.Nil(err)
 	router.ServeHTTP(w1, req)
 	assert.Equal(http.StatusCreated, w1.Code)
@@ -54,7 +54,7 @@ func TestMainEngineAndRoutes(t *testing.T) {
 
 	// RETREIVE: /list
 	w2 := httptest.NewRecorder()
-	req2, err := http.NewRequest("GET", "/todo/", nil)
+	req2, err := http.NewRequest("GET", "/todo", nil)
 	assert.Nil(err)
 	router.ServeHTTP(w2, req2)
 	assert.Equal(http.StatusOK, w2.Code)
@@ -81,7 +81,7 @@ func TestMainEngineAndRoutes(t *testing.T) {
 	body3 := bytes.NewBuffer(buf3)
 
 	w3 := httptest.NewRecorder()
-	req3, err := http.NewRequest("PUT", "/todo/", body3)
+	req3, err := http.NewRequest("PUT", "/todo", body3)
 	assert.Nil(err)
 	router.ServeHTTP(w3, req3)
 	assert.Equal(http.StatusOK, w3.Code)

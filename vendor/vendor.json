@@ -83,6 +83,12 @@
 			"revisionTime": "2018-05-06T18:05:49Z"
 		},
 		{
+			"checksumSHA1": "9RLlp/4geVnMYAY/h30ZxHfx5eY=",
+			"path": "github.com/stretchr/testify/require",
+			"revision": "f35b8ab0b5a2cef36673838d662e249dd9c94686",
+			"revisionTime": "2018-05-06T18:05:49Z"
+		},
+		{
 			"checksumSHA1": "DRScazLhz8LcQnFUitRrLO+pV2s=",
 			"path": "github.com/ugorji/go/codec",
 			"revision": "2e1067cd04ec91c6fdf491ac8028c9d3aea73ab4",

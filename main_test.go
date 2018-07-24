@@ -16,6 +16,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func getTestAppEngine() (*application, *gin.Engine) {
@@ -31,12 +32,12 @@ func getTestAppEngine() (*application, *gin.Engine) {
 
 func TestMainEngineAndRoutes(t *testing.T) {
 	app, router := getTestAppEngine()
+	require.NotNil(t, app)
+	require.NotNil(t, router)
 	assert := assert.New(t)
-	assert.NotNil(app)
-	assert.NotNil(router)
 
 	// CREATE: /post-todo
-	w1 := httptest.NewRecorder()
+	rec1 := httptest.NewRecorder()
 	newTodo := &todo{
 		Deadline:    time.Now().AddDate(0, 0, 1), // +1 day
 		Title:       "New task",
@@ -48,19 +49,19 @@ func TestMainEngineAndRoutes(t *testing.T) {
 	body := bytes.NewBuffer(buf)
 	req, err := http.NewRequest("POST", "/todo", body)
 	assert.Nil(err)
-	router.ServeHTTP(w1, req)
-	assert.Equal(http.StatusCreated, w1.Code)
-	assert.NotNil(w1.Body)
+	router.ServeHTTP(rec1, req)
+	assert.Equal(http.StatusCreated, rec1.Code)
+	assert.NotNil(rec1.Body)
 
 	// RETREIVE: /list
-	w2 := httptest.NewRecorder()
+	rec2 := httptest.NewRecorder()
 	req2, err := http.NewRequest("GET", "/todo", nil)
 	assert.Nil(err)
-	router.ServeHTTP(w2, req2)
-	assert.Equal(http.StatusOK, w2.Code)
-	assert.NotNil(w2.Body)
+	router.ServeHTTP(rec2, req2)
+	assert.Equal(http.StatusOK, rec2.Code)
+	assert.NotNil(rec2.Body)
 
-	getbody, err := ioutil.ReadAll(w2.Body)
+	getbody, err := ioutil.ReadAll(rec2.Body)
 	assert.Nil(err)
 	e := make([]todo, 0)
 	err = json.Unmarshal(getbody, &e)
@@ -80,13 +81,13 @@ func TestMainEngineAndRoutes(t *testing.T) {
 	assert.Nil(err)
 	body3 := bytes.NewBuffer(buf3)
 
-	w3 := httptest.NewRecorder()
+	rec3 := httptest.NewRecorder()
 	req3, err := http.NewRequest("PUT", "/todo", body3)
 	assert.Nil(err)
-	router.ServeHTTP(w3, req3)
-	assert.Equal(http.StatusOK, w3.Code)
+	router.ServeHTTP(rec3, req3)
+	assert.Equal(http.StatusOK, rec3.Code)
 
-	updatedBody, err := ioutil.ReadAll(w3.Body)
+	updatedBody, err := ioutil.ReadAll(rec3.Body)
 	assert.Nil(err)
 	var updated *todo
 	err = json.Unmarshal(updatedBody, &updated)
@@ -98,14 +99,14 @@ func TestMainEngineAndRoutes(t *testing.T) {
 	assert.Equal(updated.Priority, newTodo.Priority)
 
 	// DELETE: /delete-todo
-	w4 := httptest.NewRecorder()
+	rec4 := httptest.NewRecorder()
 	todoKey := strconv.Itoa(updated.ID)
 	url, err := url.Parse("/todo/" + todoKey)
 	assert.Nil(err)
 	req4, err := http.NewRequest("DELETE", url.EscapedPath(), nil)
 	assert.Nil(err)
-	router.ServeHTTP(w4, req4)
-	assert.Equal(http.StatusNoContent, w4.Code)
+	router.ServeHTTP(rec4, req4)
+	assert.Equal(http.StatusNoContent, rec4.Code)
 
 	// Close DB and eventually delete the associated file
 	app.datamapper.close()

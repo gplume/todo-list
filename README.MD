@@ -5,8 +5,8 @@ Welcome to my todo API attempt built as per your instructions.
 
 ### Language and Frameworks used
 This API is written in Go which is my preferred backend language.
-The Router and Web Framework to make things easier to read and program is [gin-gonic].
-The routing part of this framework is the very fast [httprouter] thanks to his(https://github.com/julienschmidt/httprouter). On your request I can write the same API without those helpers but who doesn't use any router which have proven faster than the default mux of Go's net/http package itself?
+The Router and Web Framework to make things easier to read and program is [gin-gonic](https://github.com/gin-gonic/gin).
+The routing part of this framework is the very fast [httprouter](https://github.com/julienschmidt/httprouter). On your request I can write the same API without those helpers but who doesn't use any router which have proven faster than the default mux of Go's net/http package itself?
 
 ### Database
 I have included a very simple key/value embedded database system ([BoltDB](https://github.com/boltdb/bolt)).

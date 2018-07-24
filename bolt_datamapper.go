@@ -57,6 +57,7 @@ func itob(v int) []byte {
 *************** METHODS ****************
 ***************************************/
 
+// saveTodo persist bytes to todos bucket.
 func (db *boltDB) saveTodo(td *todo) error {
 	return db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(db.todos)
@@ -68,12 +69,11 @@ func (db *boltDB) saveTodo(td *todo) error {
 		if err != nil {
 			return fmt.Errorf("todo cannot be properly encoded: %v", err)
 		}
-		// Persist bytes to todos bucket.
-
 		return b.Put(itob(td.ID), buf)
 	})
 }
 
+// listTodos reteive all todos in db and sort them by sorting parameter
 func (db *boltDB) listTodos(sorting string) ([]*todo, error) {
 	todos := make([]*todo, 0)
 	err := db.View(func(tx *bolt.Tx) error {
@@ -109,6 +109,7 @@ func (db *boltDB) listTodos(sorting string) ([]*todo, error) {
 	return todos, err
 }
 
+// getTodo reteive simgle todo defined by todoKey (or id)
 func (db *boltDB) getTodo(todoKey int) (*todo, error) {
 	var todo *todo
 	return todo, db.View(func(tx *bolt.Tx) error {
@@ -121,7 +122,8 @@ func (db *boltDB) getTodo(todoKey int) (*todo, error) {
 	})
 }
 
-// same as saveTodo() but stays here for compatibility reason and others db systems.
+// updateTodo is the same as saveTodo() but stays here for compatibility reason
+// and eventual others db systems.
 // boldDB key/value technology obviously don't need that
 // an additionnal ID check is done for data integrity
 func (db *boltDB) updateTodo(td *todo) error {
@@ -138,6 +140,7 @@ func (db *boltDB) updateTodo(td *todo) error {
 	})
 }
 
+// deleteTodo persistently delete record by key (id)
 func (db *boltDB) deleteTodo(todoKey int) error {
 	return db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(db.todos)

@@ -7,6 +7,7 @@ Welcome to my todo API attempt built as per your instructions.
 This API is written in Go which is my preferred backend language.
 The Router and Web Framework to make things easier to read and program is [gin-gonic](https://github.com/gin-gonic/gin).
 The routing part of this framework is the very fast [httprouter](https://github.com/julienschmidt/httprouter). On your request I can write the same API without those helpers but who doesn't use any router which have proven faster than the default mux of Go's net/http package itself?
+Go Version needs to be >= 1.8
 
 ### Database
 I have included a very simple key/value embedded database system ([bolt](https://github.com/boltdb/bolt)).
@@ -25,7 +26,7 @@ There is an optional `sort` parameter implemented:
 Returns `200` Code
 
 
-`GET /todo/:key` : retreive specific todo object defined by key (defined by ID in struct and automatically incremented by database). Returns `200` Code
+`GET /todo/:key` : retreive specific todo object defined by key. Returns `200` Code
 
 `POST /todo` : Post a correctly structured todo object. Returns `201` Code
 
@@ -60,10 +61,7 @@ http://192.168.99.100:8000/todo \
 -H 'content-type: application/json' \
 -d '{ "deadlineDate": "2018-07-27T16:00:00+00:00", "title": "First task title", "description": "First task description", "priority": 1}'
 
-curl -v -X POST \
-http://192.168.99.100:8000/todo \
--H 'content-type: application/json' \
--d '{ "deadlineDate": "2018-07-27T17:00:00+00:00", "title": "Second task title", "description": "Second task description", "priority": 2}'
+curl -v -X POST http://localhost:8000/todo -H 'content-type: application/json' -d '{ "deadlineDate": "2018-07-27T17:00:00+00:00", "title": "Second task title", "description": "Second task description", "priority": 2}'
 
 curl -v -X POST \
 http://192.168.99.100:8000/todo \

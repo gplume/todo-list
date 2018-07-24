@@ -29,6 +29,7 @@ const (
 )
 
 func (td *todo) validator() (bool, map[string]string) {
+
 	errors := make(map[string]string)
 	if td.Deadline.IsZero() {
 		errors["deadline"] = "Please set a deadline date for the new task"
@@ -43,6 +44,7 @@ func (td *todo) validator() (bool, map[string]string) {
 }
 
 func addTodo(c *gin.Context) {
+
 	var todo *todo
 	if err := c.BindJSON(&todo); err != nil {
 		log.Println(err)
@@ -60,10 +62,12 @@ func addTodo(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	postCount.Inc()
 	c.JSON(http.StatusCreated, todo)
 }
 
 func updateTodo(c *gin.Context) {
+
 	var todo *todo
 	if err := c.BindJSON(&todo); err != nil {
 		log.Println(err)
@@ -80,11 +84,13 @@ func updateTodo(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	updateCount.Inc()
 	c.JSON(http.StatusOK, todo)
 }
 
 func getTodo(c *gin.Context) {
-	todoKey := c.Param("key")
+
+	todoKey := c.Param("id")
 	intKey, err := strconv.Atoi(todoKey)
 	if err != nil {
 		msg := fmt.Sprintf("error parsing todo key: %v", err)
@@ -97,11 +103,13 @@ func getTodo(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
+	getCount.Inc()
 	c.JSON(http.StatusOK, todo)
 }
 
 func deleteTodo(c *gin.Context) {
-	todoKey := c.Param("key")
+
+	todoKey := c.Param("id")
 	intKey, err := strconv.Atoi(todoKey)
 	if err != nil {
 		msg := fmt.Sprintf("error parsing todo key: %v", err)
@@ -113,10 +121,12 @@ func deleteTodo(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
+	deleteCount.Inc()
 	c.JSON(http.StatusNoContent, nil)
 }
 
 func listTodos(c *gin.Context) {
+
 	sorting := c.DefaultQuery("sort", "asc")
 	todos, err := app.datamapper.listTodos(sorting)
 	if err != nil {
@@ -124,5 +134,20 @@ func listTodos(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
+	listCount.Inc()
 	c.JSON(http.StatusOK, todos)
+}
+
+// statsMiddleWare observe requests responses latencies
+func statsMiddleWare() gin.HandlerFunc {
+
+	return func(c *gin.Context) {
+		start := time.Now()
+		c.Next()
+		code := strconv.Itoa(c.Writer.Status())
+		elapsed := time.Since(start)
+		msElapsed := elapsed / time.Millisecond
+		httpResponseLatencies.WithLabelValues(code, c.Request.Method).Observe(float64(msElapsed))
+	}
 }

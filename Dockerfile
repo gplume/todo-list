@@ -4,7 +4,6 @@ EXPOSE 8000
 # copy the app to a proper build path to import vendor directory
 RUN mkdir -p $GOPATH/src/gplume/todo-list
 COPY . $GOPATH/src/gplume/todo-list
-RUN echo $GOPATH
 WORKDIR $GOPATH/src/gplume/todo-list
 
 RUN go test -v

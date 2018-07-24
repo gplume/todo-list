@@ -13,6 +13,7 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 var app *application
@@ -80,12 +81,15 @@ func mainEngineAndRoutes() *gin.Engine {
 
 	// group (will add /todo to all routes endpoints below:
 	api := r.Group("/todo")
+	api.Use(statsMiddleWare())
 	// API endpoints (group suffix is added automatically)
 	api.GET("", listTodos)
-	api.GET("/:key", getTodo)
+	api.GET("/:id", getTodo)
 	api.POST("", addTodo)
 	api.PUT("", updateTodo)
-	api.DELETE("/:key", deleteTodo)
+	api.DELETE("/:id", deleteTodo)
+
+	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
 	return r
 }
@@ -99,8 +103,10 @@ func main() {
 	// gin.DefaultWriter = colorable.NewColorableStdout() // for windows git bash especially
 
 	// logs: MultiWriter to Stout and file
-	myfile, _ := os.Create("server.log")
-	gin.DefaultWriter = io.MultiWriter(myfile, os.Stdout)
+	logFile, _ := os.Create("server.log")
+	gin.DefaultWriter = io.MultiWriter(logFile, os.Stdout)
+
+	registerPrometheusVars()
 
 	var err error
 	app, err = newApp(false)

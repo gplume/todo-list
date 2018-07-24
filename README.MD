@@ -9,7 +9,7 @@ The Router and Web Framework to make things easier to read and program is [gin-g
 The routing part of this framework is the very fast [httprouter](https://github.com/julienschmidt/httprouter). On your request I can write the same API without those helpers but who doesn't use any router which have proven faster than the default mux of Go's net/http package itself?
 
 ### Database
-I have included a very simple key/value embedded database system ([BoltDB](https://github.com/boltdb/bolt)).
+I have included a very simple key/value embedded database system ([bolt](https://github.com/boltdb/bolt)).
 The idea is to use an interface (datamapper) that would make very easy to use another database system without rewriting the logical part of the API.
 
 ### EndPoints
@@ -19,9 +19,9 @@ RestFull methods used:
 `GET /todo` : retreive todos list sorted ascending (closer to deadline date first) by default.
 There is an optional `sort` parameter implemented:
 
-    `http:locahost/todo?sort=desc` (descending ar `asc' for ascending but is default)
+    `http://locahost/todo?sort=desc` (descending ar `asc' for ascending but is default)
 
-    `http:locahost/todo?sort=priority` (sorted by priority value)
+    `http://locahost/todo?sort=priority` (sorted by priority value)
 Returns `200` Code
 
 
@@ -88,10 +88,9 @@ http://192.168.99.100:8000/todo \
 windows:
 ```
 docker build -t test .; docker run --rm -it -p 8000:8000 test
-docker build -t test .; docker run --mount type=bind,source="/GoProjects/todo-api.log,target=/go/src/gplume/server.log" --rm -it -p 8000:8000 test
 ```
 linux/osx:
 ```
 sudo docker build -t test .; sudo docker run --rm -it -p 8000:8000 test
-sudo docker build -t test .; sudo docker run --rm -it -p 8000:8000 -v /appropriate/path/todo-api.log:/go/src/gplume/todo-list/server.log:ro test
+
 ```

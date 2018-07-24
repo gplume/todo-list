@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"sort"
 	"strconv"
 	"time"
 
@@ -118,26 +117,12 @@ func deleteTodo(c *gin.Context) {
 }
 
 func listTodos(c *gin.Context) {
-	sorting := c.DefaultQuery("sort", "desc")
-	todos, err := app.datamapper.listTodos()
+	sorting := c.DefaultQuery("sort", "asc")
+	todos, err := app.datamapper.listTodos(sorting)
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
-	}
-	switch sorting {
-	case "asc":
-		sort.Slice(todos, func(i, j int) bool {
-			return todos[i].Deadline.Before(todos[j].Deadline)
-		})
-	case "priority":
-		sort.Slice(todos, func(i, j int) bool {
-			return todos[i].Priority < todos[j].Priority
-		})
-	default: // "desc"
-		sort.Slice(todos, func(i, j int) bool {
-			return todos[i].Deadline.After(todos[j].Deadline)
-		})
 	}
 	c.JSON(http.StatusOK, todos)
 }

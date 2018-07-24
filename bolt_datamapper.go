@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"sort"
 
 	"github.com/boltdb/bolt"
 )
@@ -73,9 +74,9 @@ func (db *boltDB) saveTodo(td *todo) error {
 	})
 }
 
-func (db *boltDB) listTodos() ([]*todo, error) {
+func (db *boltDB) listTodos(sorting string) ([]*todo, error) {
 	todos := make([]*todo, 0)
-	return todos, db.View(func(tx *bolt.Tx) error {
+	err := db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket(db.todos)
 		return b.ForEach(func(k, v []byte) error {
 			if v != nil {
@@ -89,7 +90,23 @@ func (db *boltDB) listTodos() ([]*todo, error) {
 			}
 			return nil
 		})
+
 	})
+	switch sorting {
+	case "desc":
+		sort.Slice(todos, func(i, j int) bool {
+			return todos[i].Deadline.After(todos[j].Deadline)
+		})
+	case "priority":
+		sort.Slice(todos, func(i, j int) bool {
+			return todos[i].Priority < todos[j].Priority
+		})
+	default: // "asc"
+		sort.Slice(todos, func(i, j int) bool {
+			return todos[i].Deadline.Before(todos[j].Deadline)
+		})
+	}
+	return todos, err
 }
 
 func (db *boltDB) getTodo(todoKey int) (*todo, error) {

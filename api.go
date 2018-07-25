@@ -99,6 +99,7 @@ func getTodo(c *gin.Context) {
 		msg := fmt.Sprintf("error parsing todo key: %v", err)
 		log.Println(msg)
 		c.JSON(http.StatusBadRequest, gin.H{"error": msg})
+		return
 	}
 	todo, err := app.datamapper.getTodo(intKey)
 	if err != nil {
@@ -114,10 +115,17 @@ func deleteTodo(c *gin.Context) {
 
 	todoKey := c.Param("id")
 	intKey, err := strconv.Atoi(todoKey)
-	if err != nil {
+	if err != nil || intKey == 0 {
 		msg := fmt.Sprintf("error parsing todo key: %v", err)
 		log.Println(msg)
 		c.JSON(http.StatusBadRequest, gin.H{"error": msg})
+		return
+	}
+	// here we use getTodo because BoltDB returns no error if key doesn't exists!!
+	if _, err := app.datamapper.getTodo(intKey); err != nil {
+		log.Println("app.datamapper.deleteTodo() error: ", err)
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
 	}
 	if err := app.datamapper.deleteTodo(intKey); err != nil {
 		log.Println("app.datamapper.deleteTodo() error: ", err)

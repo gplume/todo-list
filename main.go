@@ -92,6 +92,7 @@ func mainEngineAndRoutes() *gin.Engine {
 	api.PUT("", updateTodo)
 	api.DELETE("/:id", deleteTodo)
 
+	// Prometheus metrics by convention:
 	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
 	return r

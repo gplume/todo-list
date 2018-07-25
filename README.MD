@@ -53,7 +53,7 @@ type todo struct {
 
 ## Logs
 
-All ations and errors are logged both to Stdout and a local `server.log` file.
+All actions and errors are logged both to Stdout and a local `server.log` file.
 
 ## Unity Tests
 Launched as usual by `go test -v`

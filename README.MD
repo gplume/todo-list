@@ -51,9 +51,9 @@ type todo struct {
 
 ```
 
-## Errors
+## Logs
 
-All errors are logged both to Stdout and a local `server.log` file. Of course it would be better to bind this file externally at container start.
+All ations and errors are logged both to Stdout and a local `server.log` file.
 
 ## Unity Tests
 Launched as usual by `go test -v`
@@ -89,3 +89,4 @@ windows (git terminal):
 ```
 docker build -t todo-list-api .; docker run --rm -it -p 8000:8000 todo-list-api
 ```
+Of course the -d flag should be added if you wish 'deamonize' or 'detach' the application and let it run...

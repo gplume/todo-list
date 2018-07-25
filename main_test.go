@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func getTestAppEngine() *application {
+func initTestAppEngine() {
 	var err error
 	app, err = newApp(true)
 	if err != nil {
@@ -15,11 +15,10 @@ func getTestAppEngine() *application {
 	}
 	router := mainEngineAndRoutes()
 	app.router = router
-	return app
 }
 
 func TestMain(m *testing.M) {
-	app := getTestAppEngine()
+	initTestAppEngine()
 	runTests := m.Run()
 	app.datamapper.close()
 	switch app.cfg.DBType {

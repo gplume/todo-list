@@ -107,7 +107,7 @@ func main() {
 	// gin.DefaultWriter = colorable.NewColorableStdout() // for windows git bash especially
 
 	// logs: MultiWriter to Stout and file
-	logFile, _ := os.Create("server.log")
+	logFile, _ := os.Create("./logs/server.log")
 	gin.DefaultWriter = io.MultiWriter(logFile, os.Stdout)
 
 	var err error

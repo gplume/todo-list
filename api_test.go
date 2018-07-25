@@ -59,7 +59,7 @@ func TestCRUDfromEndPoints(t *testing.T) {
 	})
 
 	// RETREIVE SINGLE
-	t.Run("GET:/todo/1", func(t *testing.T) {
+	t.Run("GET:/todo/:id", func(t *testing.T) {
 		rec := httptest.NewRecorder()
 		req, err := http.NewRequest("GET", fmt.Sprintf("/todo/%d", newTodo.ID), nil)
 		assert.Nil(err)
@@ -105,7 +105,7 @@ func TestCRUDfromEndPoints(t *testing.T) {
 	})
 
 	// DELETE
-	t.Run("DELETE:/todo", func(t *testing.T) {
+	t.Run("DELETE:/todo/:id", func(t *testing.T) {
 		rec4 := httptest.NewRecorder()
 		todoKey := strconv.Itoa(newTodo.ID)
 		url, err := url.Parse("/todo/" + todoKey)

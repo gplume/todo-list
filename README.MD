@@ -22,9 +22,9 @@ RestFull methods used:
 `GET /todo` : retreive todos list sorted ascending (closer to deadline date first) by default.
 There is an optional `sort` parameter implemented:
 
-    `http://locahost/todo?sort=desc` (descending or `asc' for ascending but it is default)
+    `http://locahost:8000/todo?sort=desc` (descending or `asc' for ascending but it is default)
 
-    `http://locahost/todo?sort=priority` (sorted by priority value)
+    `http://locahost:8000/todo?sort=priority` (sorted by priority value)
 	Returns `200` Status Code
 
 

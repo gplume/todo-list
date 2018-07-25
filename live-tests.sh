@@ -73,5 +73,5 @@ curl -v -X PUT $HOST:$PORT/todo -H "$CT" -d "$UPDATED"
 
 sleep 1
 
-# if following run multiple time produce errors because some ids gets deleted:
+# if this script runs multiple time it produce errors because some ids gets deleted:
 # curl -v -X DELETE $HOST:$PORT/todo/4 -H "$CT"

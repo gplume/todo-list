@@ -23,7 +23,7 @@ type priorities int
 
 const (
 	_ priorities = iota
-	urgent
+	high
 	medium
 	low
 )
@@ -39,6 +39,9 @@ func (td *todo) validator() (bool, map[string]string) {
 	}
 	if td.Priority == 0 {
 		errors["priority"] = "Please set a priority for the task"
+	}
+	if td.Priority > 3 {
+		errors["priority"] = "Please set a correct priority for the task"
 	}
 	return len(errors) == 0, errors
 }
@@ -122,7 +125,7 @@ func deleteTodo(c *gin.Context) {
 		return
 	}
 	deleteCount.Inc()
-	c.JSON(http.StatusNoContent, nil)
+	c.JSON(http.StatusNoContent, gin.MIMEJSON)
 }
 
 func listTodos(c *gin.Context) {
@@ -137,17 +140,4 @@ func listTodos(c *gin.Context) {
 
 	listCount.Inc()
 	c.JSON(http.StatusOK, todos)
-}
-
-// statsMiddleWare observe requests responses latencies
-func statsMiddleWare() gin.HandlerFunc {
-
-	return func(c *gin.Context) {
-		start := time.Now()
-		c.Next()
-		code := strconv.Itoa(c.Writer.Status())
-		elapsed := time.Since(start)
-		msElapsed := elapsed / time.Millisecond
-		httpResponseLatencies.WithLabelValues(code, c.Request.Method).Observe(float64(msElapsed))
-	}
 }

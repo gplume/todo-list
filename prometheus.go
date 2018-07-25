@@ -1,6 +1,12 @@
 package main
 
-import "github.com/prometheus/client_golang/prometheus"
+import (
+	"strconv"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus"
+)
 
 // Prometheus vars to register at startup
 func registerPrometheusVars() {
@@ -44,9 +50,22 @@ var (
 		prometheus.HistogramOpts{
 			Namespace: "todo_list_api",
 			Subsystem: "http_server",
-			Name:      "response_latencies",
+			Name:      "request_duration",
 			Help:      "Distribution of http response latencies (ms), classified by code and method.",
 		},
 		[]string{"code", "method"},
 	)
 )
+
+// statsMiddleWare observe requests responses latencies on router Group (/todo) only
+func statsMiddleWare() gin.HandlerFunc {
+
+	return func(c *gin.Context) {
+		start := time.Now()
+		c.Next()
+		code := strconv.Itoa(c.Writer.Status())
+		elapsed := time.Since(start)
+		msElapsed := elapsed / time.Millisecond
+		httpResponseLatencies.WithLabelValues(code, c.Request.Method).Observe(float64(msElapsed))
+	}
+}

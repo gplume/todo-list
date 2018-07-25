@@ -20,6 +20,7 @@ var app *application
 
 type application struct {
 	cfg        *config
+	router     *gin.Engine
 	datamapper dataMapper
 }
 
@@ -30,7 +31,7 @@ func newApp(testing bool) (*application, error) {
 
 	err = godotenv.Load("config/config.env")
 	if err != nil {
-		return nil, fmt.Errorf("rrror loading config.env file: %v", err)
+		return nil, fmt.Errorf("error loading config.env file: %v", err)
 	}
 
 	app.cfg, err = newConfig()
@@ -49,7 +50,7 @@ func newApp(testing bool) (*application, error) {
 	switch app.cfg.DBType {
 	// there is a switch here if one should try another database system
 	// the switch is done via the config.env file (DB_TYPE) so only at the application start for now
-	// for example add "pgsql" here and write all the corresponding methods in a pgsl_datamapper file
+	// for example add "pgsql" and write all the corresponding methods in a datamapper_pgsql.go file
 	case "bolt":
 		var db *bolt.DB
 		db, err = bolt.Open(fmt.Sprintf("%s/%s", app.cfg.DBDirectory, databaseName), 0660, nil)
@@ -71,7 +72,6 @@ func mainEngineAndRoutes() *gin.Engine {
 	// Creates a router without any middleware by default
 	r := gin.New()
 
-	// Global middleware
 	// Logger middleware will write the logs to gin.DefaultWriter even if you set with GIN_MODE=release.
 	// By default gin.DefaultWriter = os.Stdout
 	r.Use(gin.Logger())
@@ -81,7 +81,10 @@ func mainEngineAndRoutes() *gin.Engine {
 
 	// group (will add /todo to all routes endpoints below:
 	api := r.Group("/todo")
+
+	// statsMiddleWare() used by prometheus to stats requests latencies
 	api.Use(statsMiddleWare())
+
 	// API endpoints (group suffix is added automatically)
 	api.GET("", listTodos)
 	api.GET("/:id", getTodo)
@@ -105,8 +108,6 @@ func main() {
 	// logs: MultiWriter to Stout and file
 	logFile, _ := os.Create("server.log")
 	gin.DefaultWriter = io.MultiWriter(logFile, os.Stdout)
-
-	registerPrometheusVars()
 
 	var err error
 	app, err = newApp(false)
@@ -137,7 +138,9 @@ func main() {
 		fmt.Println("----> gin framework is in DEBUG MODE")
 	}
 
-	r := mainEngineAndRoutes()
+	registerPrometheusVars()
+	r := mainEngineAndRoutes() // gets router and endpoints
+	app.router = r
 
 	bind := fmt.Sprintf(":%d", app.cfg.ServerPort)
 	log.Printf("----> API is Running on: %s ", bind)
@@ -145,7 +148,7 @@ func main() {
 	if app.cfg.SSLEnabled {
 		err = r.RunTLS(bind, app.cfg.SSLPub, app.cfg.SSLKey)
 		if err != nil {
-			log.Fatal("ListenAndServe: ", err)
+			log.Fatal("RunTLS: ", err)
 		}
 	} else {
 		s := &http.Server{

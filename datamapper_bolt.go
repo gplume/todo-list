@@ -34,6 +34,10 @@ func (db *boltDB) close() {
 	db.Close()
 }
 
+func (db *boltDB) db() interface{} {
+	return db
+}
+
 /***************************************
 *************** UTILITIES **************
 ***************************************/
@@ -59,6 +63,9 @@ func itob(v int) []byte {
 
 // saveTodo persist bytes to todos bucket.
 func (db *boltDB) saveTodo(td *todo) error {
+	if td == nil {
+		return errors.New("todo is nil")
+	}
 	return db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(db.todos)
 		if td.ID == 0 {
@@ -109,7 +116,7 @@ func (db *boltDB) listTodos(sorting string) ([]*todo, error) {
 	return todos, err
 }
 
-// getTodo reteive simgle todo defined by todoKey (or id)
+// getTodo reteive simgle todo defined by todoKey (id)
 func (db *boltDB) getTodo(todoKey int) (*todo, error) {
 	var todo *todo
 	return todo, db.View(func(tx *bolt.Tx) error {

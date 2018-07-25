@@ -1,20 +1,22 @@
 
 # TodoList API
 
-Welcome to my todo API attempt built as per your instructions.
+Welcome to my todo API built as per your instructions.
 
-### Language and Frameworks used
+## Language and Frameworks used
 This API is written in Go which is my preferred backend language.
 The Router and Web Framework to make things easier to read and program is [gin-gonic](https://github.com/gin-gonic/gin).
 The routing part of this framework is the very fast [httprouter](https://github.com/julienschmidt/httprouter). On your request I can write the same API without those helpers but who doesn't use any router which have proven faster than the default mux of Go's net/http package itself?
+
 Go Version needs to be >= 1.8
 
 ### Database
-I have included a very simple key/value embedded database system ([bolt](https://github.com/boltdb/bolt)).
-The idea is to use an interface (datamapper) that would make very easy to use another database system without rewriting the logical part of the API.
+I have included a simple key/value embedded database system ([bolt](https://github.com/boltdb/bolt)).
+One idea is to wrap an interface (`datamapper`) that would make very easy to use another database system without rewriting the logical part of the API.
+Don't forget to link an external volume for the database file(s) when running production container!
 
-### EndPoints
-All returns endpoints JSON Format.
+## EndPoints
+All endpoints returns JSON Format.
 RestFull methods used:
 
 `GET /todo` : retreive todos list sorted ascending (closer to deadline date first) by default.
@@ -49,46 +51,40 @@ type todo struct {
 
 ```
 
-### Unity Tests
+## Errors
+
+All errors are logged both to Stdout and local server.log file. Of course it would be better to bind this file externally at container start.
+
+## Unity Tests
 Lanched as usual by `go test -v`
 
+Run Dockerized test only: (will stop at stage #1 build
+```
+docker build --target builder -t test .
+```
+
+
 ## Live Tests
+`'live-tests.sh` script is included to lauch a series of 'live' test with `curl` that fill the database with four tasks, add one and modify it.
 
-
+example of deletion:
 ```
-curl -v -X POST \
-http://192.168.99.100:8000/todo \
--H 'content-type: application/json' \
--d '{ "deadlineDate": "2018-07-27T16:00:00+00:00", "title": "First task title", "description": "First task description", "priority": 1}'
-
-curl -v -X POST http://localhost:8000/todo -H 'content-type: application/json' -d '{ "deadlineDate": "2018-07-27T17:00:00+00:00", "title": "Second task title", "description": "Second task description", "priority": 2}'
-
-curl -v -X POST \
-http://192.168.99.100:8000/todo \
--H 'content-type: application/json' \
--d '{ "deadlineDate": "2018-07-30T16:00:00+00:00", "title": "Third task title", "description": "Third task description", "priority": 3}'
-
-curl -v  \
-http://192.168.99.100:8000/todo \
--H 'content-type: application/json'
-
-curl -v  \
-http://192.168.99.100:8000/todo/2 \
--H 'content-type: application/json'
-
-curl -v PUT \
-http://192.168.99.100:8000/todo \
--H 'content-type: application/json' \
--d '{ "id": 2, "deadlineDate": "2018-07-27T17:00:00+00:00", "title": "Second task title", "description": "Second task description", "priority": 2}'
-
+curl -v -X DELETE -H "Content-Type: application/json" http://localhost:8000/todo/1
 ```
 
-windows:
-```
-docker build -t test .; docker run --rm -it -p 8000:8000 test
-```
+Windows users using the legacy docker-toolbox should add the `win` parameter to the script: `./live-tests.sh win` to retreive the IP of the server (which is not localhost but more something like: `192.168.99.100`).
+
+## Instrumentation
+[Prometheus](https://github.com/prometheus/client_golang) client library is used and `/metrics` should be used by a Prometheus server to consume data. Displays nicely with [Grafana](https://grafana.com/).
+
+
+## DOCKER Commands
 linux/osx:
 ```
-sudo docker build -t test .; sudo docker run --rm -it -p 8000:8000 test
+sudo docker build -t todo-list-api . && sudo docker run --rm -it -p 8000:8000 todo-list-api
 
+```
+windows (git terminal):
+```
+docker build -t todo-list-api .; docker run --rm -it -p 8000:8000 todo-list-api
 ```

@@ -25,7 +25,7 @@ There is an optional `sort` parameter implemented:
     `http://locahost/todo?sort=desc` (descending or `asc' for ascending but it is default)
 
     `http://locahost/todo?sort=priority` (sorted by priority value)
-Returns `200` Code
+	Returns `200` Status Code
 
 
 `GET /todo/:key` : retreive specific todo object defined by key. Returns `200` Status Code
@@ -53,7 +53,7 @@ type todo struct {
 
 ## Errors
 
-All errors are logged both to Stdout and local server.log file. Of course it would be better to bind this file externally at container start.
+All errors are logged both to Stdout and a local `server.log` file. Of course it would be better to bind this file externally at container start.
 
 ## Unity Tests
 Launched as usual by `go test -v`

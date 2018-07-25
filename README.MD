@@ -28,13 +28,13 @@ There is an optional `sort` parameter implemented:
 	Returns `200` Status Code
 
 
-`GET /todo/:key` : retreive specific todo object defined by key. Returns `200` Status Code
+`GET /todo/:id` : retreive specific todo object defined by id. Returns `200` Status Code
 
 `POST /todo` : Post a correctly structured todo object. Returns `201` Status Code
 
 `PUT /todo` : Update existing todo object. Returns `200` Status Code
 
-`DELETE /todo/:key` : Persistently delete todo defined by `:key`. Returns `200` Status Code
+`DELETE /todo/:id` : Persistently delete todo defined by `:id`. Returns `200` Status Code
 
 
 

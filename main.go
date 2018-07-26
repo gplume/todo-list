@@ -22,6 +22,7 @@ type application struct {
 	cfg        *config
 	router     *gin.Engine
 	datamapper dataMapper
+	prom       *promeVars
 }
 
 func newApp(testing bool) (*application, error) {
@@ -64,6 +65,8 @@ func newApp(testing bool) (*application, error) {
 	default:
 		return nil, errors.New("wrong database type provided in config.env file")
 	}
+
+	app.prom = initPromeVars()
 
 	return app, nil
 }

@@ -6,27 +6,27 @@ Welcome to my todo API built as per your instructions.
 ## Language and Frameworks used
 This API is written in Go which is my preferred backend language.
 The Router and Web Framework used here to make things easier to read and program is [gin-gonic](https://github.com/gin-gonic/gin).
-The routing part of this framework is the very fast [httprouter](https://github.com/julienschmidt/httprouter), especially great for API specifications. On your request I can write the same API without those helpers but who doesn't use any router which have proven faster than the default mux of Go's net/http package itself?
+The routing part of this framework is the very fast [httprouter](https://github.com/julienschmidt/httprouter), especially great for API specifications. On your request I can write the same API without those helpers but who doesn't use any custom router which have proven to be faster than the default mux of Go's net/http package itself?
 
 Go Version needs to be >= 1.8
 
 ### Database
-I have included a simple key/value embedded database system ([bolt](https://github.com/boltdb/bolt)).
+Is included a simple key/value embedded database system ([bolt](https://github.com/boltdb/bolt)).
 One idea is to wrap an interface (`datamapper`) that make very easy to use another database system without rewriting the logical part of the API.
-User should think about linking an external volume for the database file(s) when running production container, of course.
+User should, of course, think about linking an external volume for the database file(s) when running the production container.
 
 ## EndPoints
-All endpoints returns JSON Format.
+All endpoints returns JSON and eventual errors have the "error" key first.
 RestFull methods used:
 
-	GET /todo	 : retreive todos list sorted ascending (closer to deadline date first) by default.
+	GET /todo	 : retreive full todos list sorted ascending (closer to deadline date first) by default.
 There is an optional `sort` parameter implemented:
 
     http://locahost:8000/todo?sort=desc (descending or 'asc' for ascending but it is default)
 
     http://locahost:8000/todo?sort=priority (sorted by priority value)
 
-Others:
+...
 
 	GET /todo/:id : retreive specific todo object defined by id. Returns 200 Status Code
 
@@ -57,7 +57,7 @@ All actions and errors are logged both to Stdout and a local `server.log` file.
 
 ## Unity Tests
 
-Coverage is not yet 100% but will be soon.
+Coverage is not 100% yet.
 
 Run Dockerized tests only: (will stop at stage #1 build)
 ```
@@ -78,7 +78,7 @@ Windows users using the legacy docker-toolbox should add the `win` parameter to 
 ## Instrumentation
 [Prometheus](https://github.com/prometheus/client_golang) client library is used and `/metrics` should be used by a Prometheus server to consume data. Displays nicely with [Grafana](https://grafana.com/).
 
-Requests counters and duration are implemented.
+Requests counters and durations are implemented.
 
 ## DOCKER Commands
 linux/osx:

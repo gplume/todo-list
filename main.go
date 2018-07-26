@@ -1,12 +1,14 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"path"
 	"time"
 
@@ -106,7 +108,7 @@ func main() {
 	fmt.Println("*****************  Welcome to ToDoList API!  ********************")
 	fmt.Println("*****************************************************************")
 
-	gin.DisableConsoleColor()
+	// gin.DisableConsoleColor()
 	// gin.DefaultWriter = colorable.NewColorableStdout() // for windows git bash especially
 
 	// logs: MultiWriter to Stout and file
@@ -142,26 +144,47 @@ func main() {
 		fmt.Println("----> gin framework is in DEBUG MODE")
 	}
 
-	registerPrometheusVars()
+	registerPrometheusVars()   // placed here so metrics won't be incremented by tests
 	r := mainEngineAndRoutes() // gets router and endpoints
 	app.router = r
 
 	bind := fmt.Sprintf(":%d", app.cfg.ServerPort)
 	log.Printf("----> API is Running on: %s ", bind)
 
-	if app.cfg.SSLEnabled {
+	switch app.cfg.SSLEnabled {
+	case true:
 		err = r.RunTLS(bind, app.cfg.SSLPub, app.cfg.SSLKey)
 		if err != nil {
 			log.Fatal("RunTLS: ", err)
 		}
-	} else {
-		s := &http.Server{
+	default:
+		srv := &http.Server{
 			Addr:           bind,
 			Handler:        r,
 			ReadTimeout:    10 * time.Second,
 			WriteTimeout:   10 * time.Second,
 			MaxHeaderBytes: 1 << 20,
 		}
-		s.ListenAndServe()
+
+		go func() {
+			// service connections
+			if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+				log.Fatalf("listen: %s\n", err)
+			}
+		}()
+
+		// Wait for interrupt signal to gracefully shutdown the server with
+		// a timeout of 5 seconds.
+		quit := make(chan os.Signal)
+		signal.Notify(quit, os.Interrupt)
+		<-quit
+		log.Println("Shutdown Server ...")
+
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if err := srv.Shutdown(ctx); err != nil {
+			log.Fatal("Server Shutdown:", err)
+		}
+		log.Println("Server exiting")
 	}
 }

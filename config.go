@@ -9,9 +9,6 @@ type config struct {
 	AppName       string `env:"key=APP_NAME"`
 	AppDomain     string `env:"key=APP_DOMAIN required=true"`
 	ServerPort    int    `env:"key=PORT default=8000"`
-	SSLEnabled    bool   `env:"key=SSL_ENABLED default=false"`
-	SSLPub        string `env:"key=SSL_PUB"`
-	SSLKey        string `env:"key=SSL_KEY"`
 	DBType        string `env:"key=DB_TYPE required=true"`
 	DBDirectory   string `env:"key=DB_DIRECTORY default=db"`
 	DBName        string `env:"key=DB_NAME required=true"`

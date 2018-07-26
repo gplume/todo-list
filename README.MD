@@ -90,3 +90,29 @@ windows (git terminal):
 docker build -t todo-list-api .; docker run --rm -it -p 8000:8000 todo-list-api
 ```
 Of course the -d flag should be added if you wish 'deamonize' or 'detach' the application and let it run...
+
+## Minikube Commands
+
+```
+minikube start --vm-driver="virtualbox" --insecure-registry="$REG_IP":80
+
+eval $(minikube docker-env)
+
+docker build -t todo-list-api:1.0 .
+
+kubectl create --validate -f kube-api.yml
+
+minikube dashboard
+
+kubectl get services -o wide
+
+```
+Play with the API:
+```
+curl -v http://$(minikube ip):31317/todo
+````
+cleanup:
+```
+kubectl delete -f kube-api.yml
+minikube stop
+````

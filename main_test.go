@@ -20,7 +20,7 @@ func initTestAppEngine() {
 func TestMain(m *testing.M) {
 	initTestAppEngine()
 	runTests := m.Run()
-	app.datamapper.close()
+	app.datamapper.Closing()
 	switch app.cfg.DBType {
 	case "bolt":
 		err := os.Remove(fmt.Sprintf("%s/%s", app.cfg.DBDirectory, app.cfg.DBTestName))

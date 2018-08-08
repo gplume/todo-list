@@ -8,59 +8,24 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gplume/todo-list/mapper"
 )
-
-type todo struct {
-	ID          int        `json:"id"`
-	Creation    time.Time  `json:"creationDate"`
-	Deadline    time.Time  `json:"deadlineDate"` // mandatory at insert
-	Title       string     `json:"title"`        // mandatory at insert
-	Description string     `json:"description"`
-	Priority    priorities `json:"priority"` // mandatory at insert
-}
-
-type priorities int
-
-const (
-	_ priorities = iota
-	high
-	medium
-	low
-)
-
-func (td *todo) validator() (bool, map[string]string) {
-
-	errors := make(map[string]string)
-	if td.Deadline.IsZero() {
-		errors["deadline"] = "Please set a deadline date for the new task"
-	}
-	if td.Title == "" {
-		errors["title"] = "Please insert a task Title"
-	}
-	if td.Priority == 0 {
-		errors["priority"] = "Please set a priority for the task"
-	}
-	if td.Priority > 3 {
-		errors["priority"] = "Please set a correct priority for the task"
-	}
-	return len(errors) == 0, errors
-}
 
 func addTodo(c *gin.Context) {
 
-	var todo *todo
+	var todo *mapper.Todo
 	if err := c.BindJSON(&todo); err != nil {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	todo.Creation = time.Now()
-	if ok, errors := todo.validator(); !ok {
+	if ok, errors := todo.Validator(); !ok {
 		log.Println(errors)
 		c.JSON(http.StatusBadRequest, errors)
 		return
 	}
-	if err := app.datamapper.saveTodo(todo); err != nil {
+	if err := app.datamapper.SaveTodo(todo); err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -71,18 +36,18 @@ func addTodo(c *gin.Context) {
 
 func updateTodo(c *gin.Context) {
 
-	var todo *todo
+	var todo *mapper.Todo
 	if err := c.BindJSON(&todo); err != nil {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if ok, errors := todo.validator(); !ok {
+	if ok, errors := todo.Validator(); !ok {
 		log.Println(errors)
 		c.JSON(http.StatusBadRequest, errors)
 		return
 	}
-	if err := app.datamapper.updateTodo(todo); err != nil {
+	if err := app.datamapper.UpdateTodo(todo); err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -101,7 +66,7 @@ func getTodo(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": msg})
 		return
 	}
-	todo, err := app.datamapper.getTodo(intKey)
+	todo, err := app.datamapper.GetTodo(intKey)
 	if err != nil {
 		log.Println("app.datamapper.getTodo() error: ", err)
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
@@ -122,12 +87,12 @@ func deleteTodo(c *gin.Context) {
 		return
 	}
 	// here we use getTodo because BoltDB returns no error if key doesn't exists!!
-	if _, err := app.datamapper.getTodo(intKey); err != nil {
+	if _, err := app.datamapper.GetTodo(intKey); err != nil {
 		log.Println("app.datamapper.deleteTodo() error: ", err)
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	if err := app.datamapper.deleteTodo(intKey); err != nil {
+	if err := app.datamapper.DeleteTodo(intKey); err != nil {
 		log.Println("app.datamapper.deleteTodo() error: ", err)
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -139,7 +104,7 @@ func deleteTodo(c *gin.Context) {
 func listTodos(c *gin.Context) {
 
 	sorting := c.DefaultQuery("sort", "asc")
-	todos, err := app.datamapper.listTodos(sorting)
+	todos, err := app.datamapper.ListTodos(sorting)
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

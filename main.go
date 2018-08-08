@@ -14,6 +14,8 @@ import (
 
 	"github.com/boltdb/bolt"
 	"github.com/gin-gonic/gin"
+	"github.com/gplume/todo-list/boltmapper"
+	"github.com/gplume/todo-list/mapper"
 	"github.com/joho/godotenv"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -23,7 +25,7 @@ var app *application
 type application struct {
 	cfg        *config
 	router     *gin.Engine
-	datamapper dataMapper
+	datamapper mapper.DataMapper
 	prom       *promeVars
 }
 
@@ -60,7 +62,7 @@ func newApp(testing bool) (*application, error) {
 		if err != nil {
 			return nil, err
 		}
-		app.datamapper, err = newBoltDatamapper(db, app.cfg)
+		app.datamapper, err = boltmapper.NewBoltDatamapper(db)
 		if err != nil {
 			log.Fatalf("ERROR INITIALIZING BoltDataMapper: %v", err)
 		}
@@ -120,7 +122,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error initializing Application : %v", err)
 	}
-	defer app.datamapper.close()
+	defer app.datamapper.Closing()
 
 	if app.cfg.UsageMode != "dev" {
 		fmt.Println("******************  APP IN PRODUCTION MODE  *********************")

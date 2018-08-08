@@ -3,7 +3,7 @@ FROM golang:1.10.3 as builder
 RUN mkdir -p $GOPATH/src/github.com/gplume/todo-list
 WORKDIR $GOPATH/src/github.com/gplume/todo-list
 COPY . .
-RUN go test -v
+RUN go test -v ./...
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o todo-list .
 
 # stage 2

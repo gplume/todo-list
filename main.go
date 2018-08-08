@@ -10,14 +10,17 @@ import (
 	"os"
 	"os/signal"
 	"path"
+	"strconv"
 	"time"
 
 	"github.com/boltdb/bolt"
 	"github.com/gin-gonic/gin"
-	"github.com/gplume/todo-list/boltmapper"
+	"github.com/gplume/todo-list/datamappers/boltmapper"
 	"github.com/gplume/todo-list/mapper"
+	prome "github.com/gplume/todo-list/prometheus"
 	"github.com/gplume/todo-list/utils"
 	"github.com/joho/godotenv"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
@@ -27,7 +30,7 @@ type application struct {
 	cfg        *config
 	router     *gin.Engine
 	datamapper mapper.DataMapper
-	prom       *promeVars
+	prom       *prome.Vars
 }
 
 func newApp(testing bool) (*application, error) {
@@ -71,7 +74,7 @@ func newApp(testing bool) (*application, error) {
 		return nil, errors.New("wrong database type provided in config.env file")
 	}
 
-	app.prom = initPromeVars()
+	app.prom = prome.InitPromeVars()
 
 	return app, nil
 }
@@ -104,6 +107,30 @@ func mainEngineAndRoutes() *gin.Engine {
 	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
 	return r
+}
+
+// Prometheus vars to register at startup
+func registerPrometheusVars() {
+	prometheus.MustRegister(app.prom.ListCount)
+	prometheus.MustRegister(app.prom.GetCount)
+	prometheus.MustRegister(app.prom.PostCount)
+	prometheus.MustRegister(app.prom.UpdateCount)
+	prometheus.MustRegister(app.prom.DeleteCount)
+	prometheus.MustRegister(app.prom.HTTPResponseLatencies)
+	// no err returned it just panics (Must...)
+}
+
+// statsMiddleWare observe requests responses latencies on router Group (/todo) only
+func statsMiddleWare() gin.HandlerFunc {
+
+	return func(c *gin.Context) {
+		start := time.Now()
+		c.Next()
+		code := strconv.Itoa(c.Writer.Status())
+		elapsed := time.Since(start)
+		msElapsed := elapsed / time.Millisecond
+		app.prom.HTTPResponseLatencies.WithLabelValues(code, c.Request.Method).Observe(float64(msElapsed))
+	}
 }
 
 func main() {

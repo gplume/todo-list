@@ -29,5 +29,7 @@ func newConfig() (*config, error) {
 		cfg.BaseDir = utils.GetDefaultBaseDir()
 	}
 
+	// do others customizing of *config here
+
 	return cfg, nil
 }

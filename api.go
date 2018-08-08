@@ -30,7 +30,7 @@ func addTodo(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	app.prom.postCount.Inc()
+	app.prom.PostCount.Inc()
 	c.JSON(http.StatusCreated, todo)
 }
 
@@ -52,7 +52,7 @@ func updateTodo(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	app.prom.updateCount.Inc()
+	app.prom.UpdateCount.Inc()
 	c.JSON(http.StatusOK, todo)
 }
 
@@ -72,7 +72,7 @@ func getTodo(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	app.prom.getCount.Inc()
+	app.prom.GetCount.Inc()
 	c.JSON(http.StatusOK, todo)
 }
 
@@ -97,7 +97,7 @@ func deleteTodo(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	app.prom.deleteCount.Inc()
+	app.prom.DeleteCount.Inc()
 	c.JSON(http.StatusNoContent, gin.MIMEJSON)
 }
 
@@ -111,6 +111,6 @@ func listTodos(c *gin.Context) {
 		return
 	}
 
-	app.prom.listCount.Inc()
+	app.prom.ListCount.Inc()
 	c.JSON(http.StatusOK, todos)
 }

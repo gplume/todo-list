@@ -1,6 +1,9 @@
 package main
 
-import "github.com/danryan/env"
+import (
+	"github.com/danryan/env"
+	"github.com/gplume/todo-list/utils"
+)
 
 type config struct {
 	FrameWorkMode string `env:"key=FRAMEWORK_MODE default=debug"`
@@ -23,7 +26,7 @@ func newConfig() (*config, error) {
 
 	// Absolute App Dir
 	if cfg.BaseDir == "" {
-		cfg.BaseDir = getDefaultBaseDir()
+		cfg.BaseDir = utils.GetDefaultBaseDir()
 	}
 
 	return cfg, nil

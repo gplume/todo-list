@@ -16,6 +16,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gplume/todo-list/boltmapper"
 	"github.com/gplume/todo-list/mapper"
+	"github.com/gplume/todo-list/utils"
 	"github.com/joho/godotenv"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -44,7 +45,7 @@ func newApp(testing bool) (*application, error) {
 		return app, fmt.Errorf("error in config.env: %v", err)
 	}
 
-	if err := os.MkdirAll(path.Join(getDefaultBaseDir(), app.cfg.DBDirectory), 0777); err != nil && !os.IsExist(err) {
+	if err := os.MkdirAll(path.Join(utils.GetDefaultBaseDir(), app.cfg.DBDirectory), 0777); err != nil && !os.IsExist(err) {
 		return nil, err
 	}
 	databaseName := app.cfg.DBName

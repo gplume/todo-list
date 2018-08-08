@@ -1,11 +1,12 @@
-package main
+package config
 
 import (
 	"github.com/danryan/env"
 	"github.com/gplume/todo-list/utils"
 )
 
-type config struct {
+// Config structure for app options
+type Config struct {
 	FrameWorkMode string `env:"key=FRAMEWORK_MODE default=debug"`
 	UsageMode     string `env:"key=USAGE_MODE default=dev"`
 	BaseDir       string `env:"key=BASE_DIR"`
@@ -18,8 +19,9 @@ type config struct {
 	DBTestName    string `env:"key=DB_TEST_NAME required=true"`
 }
 
-func newConfig() (*config, error) {
-	cfg := &config{}
+// New return a new config structure
+func New() (*Config, error) {
+	cfg := &Config{}
 	if err := env.Process(cfg); err != nil {
 		return cfg, err
 	}

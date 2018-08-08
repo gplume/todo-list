@@ -15,6 +15,7 @@ import (
 
 	"github.com/boltdb/bolt"
 	"github.com/gin-gonic/gin"
+	"github.com/gplume/todo-list/config"
 	"github.com/gplume/todo-list/datamappers/boltmapper"
 	"github.com/gplume/todo-list/mapper"
 	prome "github.com/gplume/todo-list/prometheus"
@@ -27,7 +28,7 @@ import (
 var app *application
 
 type application struct {
-	cfg        *config
+	cfg        *config.Config
 	router     *gin.Engine
 	datamapper mapper.DataMapper
 	prom       *prome.Vars
@@ -38,12 +39,12 @@ func newApp(testing bool) (*application, error) {
 	var err error
 	app = &application{}
 
-	err = godotenv.Load("config/config.env")
+	err = godotenv.Load("conf/config.env")
 	if err != nil {
 		return nil, fmt.Errorf("error loading config.env file: %v", err)
 	}
 
-	app.cfg, err = newConfig()
+	app.cfg, err = config.New()
 	if err != nil {
 		return app, fmt.Errorf("error in config.env: %v", err)
 	}

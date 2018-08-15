@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gplume/todo-list/models"
+	"github.com/gplume/todo-list/pkg/models"
 )
 
 func addTodo(c *gin.Context) {

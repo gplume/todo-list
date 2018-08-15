@@ -2,7 +2,7 @@ package config
 
 import (
 	"github.com/danryan/env"
-	"github.com/gplume/todo-list/utils"
+	"github.com/gplume/todo-list/pkg/utils"
 )
 
 // Config structure for app options

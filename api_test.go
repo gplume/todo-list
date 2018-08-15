@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gplume/todo-list/models"
+	"github.com/gplume/todo-list/pkg/models"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -8,7 +8,7 @@ import (
 	"sort"
 
 	"github.com/boltdb/bolt"
-	"github.com/gplume/todo-list/models"
+	"github.com/gplume/todo-list/pkg/models"
 )
 
 type boltDB struct {

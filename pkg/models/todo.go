@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-// Todo Type is exported because on datamappers....
+// Todo Type is exported because of datamappers....
 type Todo struct {
 	ID          int        `json:"id"`
 	Creation    time.Time  `json:"creationDate"`

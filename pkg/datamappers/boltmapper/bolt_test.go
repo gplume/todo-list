@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/boltdb/bolt"
+	datamapper "github.com/gplume/todo-list/pkg/datamappers"
 	"github.com/gplume/todo-list/pkg/models"
 )
 
@@ -34,7 +35,7 @@ func Test_boltDB_SaveTodo(t *testing.T) {
 	}
 	tests := []struct {
 		name    string
-		db      models.DataMapper
+		db      datamapper.DataMapper
 		args    args
 		wantErr bool
 	}{

@@ -44,13 +44,6 @@ func (td *Todo) Validator() (bool, map[string]string) {
 	return len(errors) == 0, errors
 }
 
-// DataMapper holds the active database system methods
-type DataMapper interface {
-	Db() interface{}
-	Closing()
-	ToDoMapper
-}
-
 // ToDoMapper includes all CRUD operation to database
 type ToDoMapper interface {
 	SaveTodo(*Todo) error

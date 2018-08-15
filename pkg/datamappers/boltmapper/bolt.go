@@ -8,6 +8,7 @@ import (
 	"sort"
 
 	"github.com/boltdb/bolt"
+	datamapper "github.com/gplume/todo-list/pkg/datamappers"
 	"github.com/gplume/todo-list/pkg/models"
 )
 
@@ -21,7 +22,7 @@ type boltDB struct {
 // }
 
 // NewBoltDatamapper INIT FUNCTION
-func NewBoltDatamapper(db *bolt.DB) (models.DataMapper, error) {
+func NewBoltDatamapper(db *bolt.DB) (datamapper.DataMapper, error) {
 	var err error
 	_, err = getBucket(db, "todos")
 	if err != nil {

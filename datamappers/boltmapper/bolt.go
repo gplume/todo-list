@@ -8,7 +8,7 @@ import (
 	"sort"
 
 	"github.com/boltdb/bolt"
-	"github.com/gplume/todo-list/mapper"
+	"github.com/gplume/todo-list/models"
 )
 
 type boltDB struct {
@@ -21,7 +21,7 @@ type boltDB struct {
 // }
 
 // NewBoltDatamapper INIT FUNCTION
-func NewBoltDatamapper(db *bolt.DB) (mapper.DataMapper, error) {
+func NewBoltDatamapper(db *bolt.DB) (models.DataMapper, error) {
 	var err error
 	_, err = getBucket(db, "todos")
 	if err != nil {
@@ -67,7 +67,7 @@ func itob(v int) []byte {
 ***************************************/
 
 // saveTodo persist bytes to todos bucket.
-func (db *boltDB) SaveTodo(td *mapper.Todo) error {
+func (db *boltDB) SaveTodo(td *models.Todo) error {
 	if td == nil {
 		return errors.New("todo is nil")
 	}
@@ -86,13 +86,13 @@ func (db *boltDB) SaveTodo(td *mapper.Todo) error {
 }
 
 // listTodos reteive all todos in db and sort them by sorting parameter
-func (db *boltDB) ListTodos(sorting string) ([]*mapper.Todo, error) {
-	todos := make([]*mapper.Todo, 0)
+func (db *boltDB) ListTodos(sorting string) ([]*models.Todo, error) {
+	todos := make([]*models.Todo, 0)
 	err := db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket(db.todos)
 		return b.ForEach(func(k, v []byte) error {
 			if v != nil {
-				var td *mapper.Todo
+				var td *models.Todo
 				if err := json.Unmarshal(v, &td); err != nil {
 					return fmt.Errorf("error parsing todos: %v", err)
 				}
@@ -122,8 +122,8 @@ func (db *boltDB) ListTodos(sorting string) ([]*mapper.Todo, error) {
 }
 
 // getTodo reteive simgle todo defined by todoKey (id)
-func (db *boltDB) GetTodo(todoKey int) (*mapper.Todo, error) {
-	var todo *mapper.Todo
+func (db *boltDB) GetTodo(todoKey int) (*models.Todo, error) {
+	var todo *models.Todo
 	return todo, db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket(db.todos)
 		td := b.Get(itob(todoKey))
@@ -138,7 +138,7 @@ func (db *boltDB) GetTodo(todoKey int) (*mapper.Todo, error) {
 // and eventual others db systems.
 // boldDB key/value technology obviously don't need that
 // an additionnal ID check is done for data integrity
-func (db *boltDB) UpdateTodo(td *mapper.Todo) error {
+func (db *boltDB) UpdateTodo(td *models.Todo) error {
 	return db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(db.todos)
 		if td.ID == 0 {

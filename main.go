@@ -17,7 +17,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gplume/todo-list/config"
 	"github.com/gplume/todo-list/datamappers/boltmapper"
-	"github.com/gplume/todo-list/mapper"
+	"github.com/gplume/todo-list/models"
 	prome "github.com/gplume/todo-list/prometheus"
 	"github.com/gplume/todo-list/utils"
 	"github.com/joho/godotenv"
@@ -30,7 +30,7 @@ var app *application
 type application struct {
 	cfg        *config.Config
 	router     *gin.Engine
-	datamapper mapper.DataMapper
+	datamapper models.DataMapper
 	prom       *prome.Vars
 }
 

@@ -1,4 +1,4 @@
-package mapper
+package models
 
 import (
 	"time"
@@ -48,6 +48,11 @@ func (td *Todo) Validator() (bool, map[string]string) {
 type DataMapper interface {
 	Db() interface{}
 	Closing()
+	ToDoMapper
+}
+
+// ToDoMapper includes all CRUD operation to database
+type ToDoMapper interface {
 	SaveTodo(*Todo) error
 	ListTodos(string) ([]*Todo, error)
 	GetTodo(int) (*Todo, error)

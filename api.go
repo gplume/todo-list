@@ -8,12 +8,12 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gplume/todo-list/mapper"
+	"github.com/gplume/todo-list/models"
 )
 
 func addTodo(c *gin.Context) {
 
-	var todo *mapper.Todo
+	var todo *models.Todo
 	if err := c.BindJSON(&todo); err != nil {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -36,7 +36,7 @@ func addTodo(c *gin.Context) {
 
 func updateTodo(c *gin.Context) {
 
-	var todo *mapper.Todo
+	var todo *models.Todo
 	if err := c.BindJSON(&todo); err != nil {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

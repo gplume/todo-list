@@ -43,15 +43,24 @@ func Test_boltDB_SaveTodo(t *testing.T) {
 			name: "test1_true",
 			db:   dtmp,
 			args: args{
-				td: &models.Todo{Title: "First task title", Description: "First Task description", Deadline: time.Now().AddDate(0, 0, 1),
-					Priority: models.Low}},
+				td: &models.Todo{
+					Title:       "First task title",
+					Description: "First Task description",
+					Deadline:    time.Now().AddDate(0, 0, 1),
+					Priority:    models.Low,
+				}},
 			wantErr: false,
 		},
 		{
 			name: "test2_true",
 			db:   dtmp,
 			args: args{
-				td: &models.Todo{Title: "Second task title", Description: "Second Task description", Deadline: time.Now().AddDate(0, 0, 1), Priority: models.High}},
+				td: &models.Todo{
+					Title:       "Second task title",
+					Description: "Second Task description",
+					Deadline:    time.Now().AddDate(0, 0, 1),
+					Priority:    models.High,
+				}},
 			wantErr: false,
 		},
 		{name: "test3_false", db: dtmp, args: args{td: nil}, wantErr: true},

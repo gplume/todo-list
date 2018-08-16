@@ -19,7 +19,6 @@ import (
 func TestCRUDfromEndPoints(t *testing.T) {
 
 	assert := assert.New(t)
-	// require := require.New(t)
 	newTodo := &models.Todo{
 		Deadline:    time.Now().AddDate(0, 0, 1), // +1 day
 		Title:       "New task",

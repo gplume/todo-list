@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"os"
 	"testing"
 
@@ -14,25 +13,27 @@ func TestInitTestAppEngine(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error initializing Application : %v", err)
 	}
+	engine.App.Datamapper.Closing()
 	_, err = engine.NewApp(true)
 	if err != nil {
 		t.Fatalf("Error initializing Application : %v", err)
 	}
-
+	engine.App.Datamapper.Closing()
 }
-func initTestAppEngine() {
-	var err error
-	_, err = engine.NewApp(true)
-	if err != nil {
-		log.Fatalf("Error initializing Application : %v", err)
-	}
 
-}
+// func initTestAppEngine() {
+// 	var err error
+// 	_, err = engine.NewApp(true)
+// 	if err != nil {
+// 		log.Fatalf("Error initializing Application : %v", err)
+// 	}
+// 	engine.App.Datamapper.Closing()
+// }
 
 // TestMain is a trick to initialize app before running tests
 func TestMain(m *testing.M) {
 	runTests := m.Run()
-	engine.App.Datamapper.Closing()
+	// engine.App.Datamapper.Closing()
 	// switch engine.App.Cfg.DBType {
 	// case "bolt":
 	// 	err := os.Remove(fmt.Sprintf("%s/%s", engine.App.Cfg.DBDirectory, engine.App.Cfg.DBTestName))

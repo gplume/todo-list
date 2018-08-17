@@ -1,4 +1,4 @@
-package main
+package api
 
 import (
 	"fmt"
@@ -8,10 +8,13 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gplume/todo-list/pkg/engine"
 	"github.com/gplume/todo-list/pkg/models"
+	prome "github.com/gplume/todo-list/pkg/prometheus"
 )
 
-func addTodo(c *gin.Context) {
+// AddTodo insert a complet Todo structure in DB
+func AddTodo(c *gin.Context) {
 
 	var todo *models.Todo
 	if err := c.BindJSON(&todo); err != nil {
@@ -25,16 +28,17 @@ func addTodo(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, errors)
 		return
 	}
-	if err := app.datamapper.SaveTodo(todo); err != nil {
+	if err := engine.App.Datamapper.SaveTodo(todo); err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	app.prom.PostCount.Inc()
+	prome.Vars.PostCount.Inc()
 	c.JSON(http.StatusCreated, todo)
 }
 
-func updateTodo(c *gin.Context) {
+// UpdateTodo update a task by full structure
+func UpdateTodo(c *gin.Context) {
 
 	var todo *models.Todo
 	if err := c.BindJSON(&todo); err != nil {
@@ -47,16 +51,17 @@ func updateTodo(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, errors)
 		return
 	}
-	if err := app.datamapper.UpdateTodo(todo); err != nil {
+	if err := engine.App.Datamapper.UpdateTodo(todo); err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	app.prom.UpdateCount.Inc()
+	prome.Vars.UpdateCount.Inc()
 	c.JSON(http.StatusOK, todo)
 }
 
-func getTodo(c *gin.Context) {
+// GetTodo retreive a task by ID
+func GetTodo(c *gin.Context) {
 
 	todoKey := c.Param("id")
 	intKey, err := strconv.Atoi(todoKey)
@@ -66,17 +71,18 @@ func getTodo(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": msg})
 		return
 	}
-	todo, err := app.datamapper.GetTodo(intKey)
+	todo, err := engine.App.Datamapper.GetTodo(intKey)
 	if err != nil {
-		log.Println("app.datamapper.getTodo() error: ", err)
+		log.Println("engine.App.Datamapper.getTodo() error: ", err)
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	app.prom.GetCount.Inc()
+	prome.Vars.GetCount.Inc()
 	c.JSON(http.StatusOK, todo)
 }
 
-func deleteTodo(c *gin.Context) {
+// DeleteTodo delete a task by ID
+func DeleteTodo(c *gin.Context) {
 
 	todoKey := c.Param("id")
 	intKey, err := strconv.Atoi(todoKey)
@@ -87,30 +93,31 @@ func deleteTodo(c *gin.Context) {
 		return
 	}
 	// here we use getTodo because BoltDB returns no error if key doesn't exists!!
-	if _, err := app.datamapper.GetTodo(intKey); err != nil {
-		log.Println("app.datamapper.deleteTodo() error: ", err)
+	if _, err := engine.App.Datamapper.GetTodo(intKey); err != nil {
+		log.Println("engine.App.Datamapper.deleteTodo() error: ", err)
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	if err := app.datamapper.DeleteTodo(intKey); err != nil {
-		log.Println("app.datamapper.deleteTodo() error: ", err)
+	if err := engine.App.Datamapper.DeleteTodo(intKey); err != nil {
+		log.Println("engine.App.Datamapper.deleteTodo() error: ", err)
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	app.prom.DeleteCount.Inc()
+	prome.Vars.DeleteCount.Inc()
 	c.JSON(http.StatusNoContent, gin.MIMEJSON)
 }
 
-func listTodos(c *gin.Context) {
+// ListTodos retreive a list of tasks
+func ListTodos(c *gin.Context) {
 
 	sorting := c.DefaultQuery("sort", "asc")
-	todos, err := app.datamapper.ListTodos(sorting)
+	todos, err := engine.App.Datamapper.ListTodos(sorting)
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	app.prom.ListCount.Inc()
+	prome.Vars.ListCount.Inc()
 	c.JSON(http.StatusOK, todos)
 }

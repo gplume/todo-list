@@ -1,4 +1,4 @@
-package main
+package api_test
 
 import (
 	"bytes"
@@ -8,16 +8,27 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"runtime"
 	"strconv"
 	"testing"
 	"time"
 
+	"github.com/gplume/todo-list/pkg/utils"
+
+	"github.com/gplume/todo-list/pkg/engine"
 	"github.com/gplume/todo-list/pkg/models"
+	"github.com/gplume/todo-list/pkg/router"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestCRUDfromEndPoints(t *testing.T) {
-
+	_, err := engine.NewApp(true)
+	if err != nil {
+		_, filename, _, _ := runtime.Caller(0)
+		t.Errorf("Current test filename: %v", filename)
+		t.Errorf("PWD: %v", utils.GetDefaultBaseDir())
+		t.Fatalf("Error initializing Application : %v", err)
+	}
 	assert := assert.New(t)
 	newTodo := &models.Todo{
 		Deadline:    time.Now().AddDate(0, 0, 1), // +1 day
@@ -33,7 +44,7 @@ func TestCRUDfromEndPoints(t *testing.T) {
 		body := bytes.NewBuffer(buf)
 		req, err := http.NewRequest("POST", "/todo", body)
 		assert.Nil(err)
-		app.router.ServeHTTP(rec1, req)
+		router.Engine.ServeHTTP(rec1, req)
 		assert.Equal(http.StatusCreated, rec1.Code)
 		assert.NotNil(rec1.Body)
 	})
@@ -43,7 +54,7 @@ func TestCRUDfromEndPoints(t *testing.T) {
 		rec2 := httptest.NewRecorder()
 		req2, err := http.NewRequest("GET", "/todo", nil)
 		assert.Nil(err)
-		app.router.ServeHTTP(rec2, req2)
+		router.Engine.ServeHTTP(rec2, req2)
 		assert.Equal(http.StatusOK, rec2.Code)
 		assert.NotNil(rec2.Body)
 
@@ -63,7 +74,7 @@ func TestCRUDfromEndPoints(t *testing.T) {
 		rec := httptest.NewRecorder()
 		req, err := http.NewRequest("GET", fmt.Sprintf("/todo/%d", newTodo.ID), nil)
 		assert.Nil(err)
-		app.router.ServeHTTP(rec, req)
+		router.Engine.ServeHTTP(rec, req)
 		assert.Equal(http.StatusOK, rec.Code)
 		assert.NotNil(rec.Body)
 
@@ -89,7 +100,7 @@ func TestCRUDfromEndPoints(t *testing.T) {
 		rec3 := httptest.NewRecorder()
 		req3, err := http.NewRequest("PUT", "/todo", body3)
 		assert.Nil(err)
-		app.router.ServeHTTP(rec3, req3)
+		router.Engine.ServeHTTP(rec3, req3)
 		assert.Equal(http.StatusOK, rec3.Code)
 
 		updatedBody, err := ioutil.ReadAll(rec3.Body)
@@ -112,7 +123,10 @@ func TestCRUDfromEndPoints(t *testing.T) {
 		assert.Nil(err)
 		req4, err := http.NewRequest("DELETE", url.EscapedPath(), nil)
 		assert.Nil(err)
-		app.router.ServeHTTP(rec4, req4)
+		router.Engine.ServeHTTP(rec4, req4)
 		assert.Equal(http.StatusNoContent, rec4.Code)
 	})
+
+	engine.App.Datamapper.Closing()
+
 }

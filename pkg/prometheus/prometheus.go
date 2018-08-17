@@ -4,8 +4,11 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-// Vars contains all counters and histograms
-type Vars struct {
+// Vars exports struct
+var Vars *AppVars
+
+// AppVars contains all counters and histograms
+type AppVars struct {
 	ListCount             prometheus.Counter
 	GetCount              prometheus.Counter
 	PostCount             prometheus.Counter
@@ -14,9 +17,19 @@ type Vars struct {
 	HTTPResponseLatencies *prometheus.HistogramVec
 }
 
+func init() {
+	InitPromeVars()
+	prometheus.MustRegister(Vars.ListCount)
+	prometheus.MustRegister(Vars.GetCount)
+	prometheus.MustRegister(Vars.PostCount)
+	prometheus.MustRegister(Vars.UpdateCount)
+	prometheus.MustRegister(Vars.DeleteCount)
+	prometheus.MustRegister(Vars.HTTPResponseLatencies)
+}
+
 // InitPromeVars launch Prometheus vars initialization
-func InitPromeVars() *Vars {
-	return &Vars{
+func InitPromeVars() {
+	Vars = &AppVars{
 		ListCount: prometheus.NewCounter(prometheus.CounterOpts{
 			Name: "list_total",
 			Help: "Number of full todo list successfully processed.",

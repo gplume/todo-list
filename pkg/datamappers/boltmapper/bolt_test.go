@@ -2,7 +2,6 @@ package boltmapper
 
 import (
 	"io/ioutil"
-	"log"
 	"os"
 	"testing"
 	"time"
@@ -13,7 +12,7 @@ import (
 )
 
 func Test_boltDB_SaveTodo(t *testing.T) {
-	// int boltDB
+	// init boltDB
 	tmpfile, err := ioutil.TempFile("", "tests")
 	if err != nil {
 		t.Errorf("%s", err)
@@ -67,7 +66,7 @@ func Test_boltDB_SaveTodo(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			log.Printf("%+v", tt.args.td)
+			// log.Printf("%+v", tt.args.td)
 			if err := tt.db.SaveTodo(tt.args.td); (err != nil) != tt.wantErr {
 				t.Errorf("boltDB.SaveTodo() error = %v, wantErr %v", err, tt.wantErr)
 			}

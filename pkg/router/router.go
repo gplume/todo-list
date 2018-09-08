@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	"github.com/gplume/todo-list/pkg/api"
 	prome "github.com/gplume/todo-list/pkg/prometheus"
@@ -44,6 +45,9 @@ func NewEngineAndRoutes() *gin.Engine {
 
 	// Prometheus metrics by convention:
 	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
+
+	// pprof.Register(r, &pprof.Options{RoutePrefix: "debug/pprof"})
+	pprof.Register(r)
 
 	Engine = r
 	return r

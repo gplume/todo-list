@@ -54,11 +54,11 @@ func main() {
 	bind := fmt.Sprintf(":%d", engine.App.Cfg.ServerPort)
 
 	srv := &http.Server{
-		Addr:           bind,
-		Handler:        router.Engine,
-		ReadTimeout:    10 * time.Second,
-		WriteTimeout:   10 * time.Second,
-		MaxHeaderBytes: 1 << 20,
+		Addr:    bind,
+		Handler: router.Engine,
+		// ReadTimeout:    10 * time.Second,
+		// WriteTimeout:   10 * time.Second,
+		// MaxHeaderBytes: 1 << 20,
 	}
 	go func() {
 		// service connections

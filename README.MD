@@ -96,7 +96,8 @@ Of course the -d flag should be added if you wish to 'deamonize' or 'detach' the
 ## Minikube Commands
 
 ```
-minikube start --vm-driver="virtualbox" --insecure-registry="$REG_IP":80
+minikube start --vm-driver="hyperv" --insecure-registry="$REG_IP":80
+minikube start --vm-driver="hyperv" --hyperv-virtual-switch "Primary Virtual Switch"
 
 eval $(minikube docker-env)
 
@@ -121,4 +122,6 @@ Cleanup:
 ```
 kubectl delete -f kube-api.yml
 minikube stop
+eval $(minikube docker-env -u)
+minikube delete
 ````

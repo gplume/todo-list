@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -35,7 +34,8 @@ func NewApp(testing bool) (*Application, error) {
 	app := &Application{}
 	configDir := "conf"
 	confPath := configDir + "/config.env"
-	if testing {
+	var baseDir string
+	if testing { // walking down... I know but do you have a better way? :)
 		exPath := utils.GetDefaultBaseDir()
 		for !utils.SearchDir(exPath, configDir) {
 			var file string
@@ -46,13 +46,12 @@ func NewApp(testing bool) (*Application, error) {
 			exPath = filepath.Clean(exPath)
 		}
 		confPath = filepath.Join(exPath, confPath)
-		confPath = filepath.Clean(confPath)
+		baseDir = exPath
 	}
 	err = godotenv.Load(confPath)
 	if err != nil {
 		return nil, fmt.Errorf("error loading config.env file: %v", err)
 	}
-	// log.Println("---> ENV config OK")
 
 	app.Cfg, err = config.New()
 	if err != nil {
@@ -68,7 +67,6 @@ func NewApp(testing bool) (*Application, error) {
 	// databaseDir := app.Cfg.DBDirectory
 	if testing {
 		databaseName = app.Cfg.DBTestName
-
 	}
 
 	switch app.Cfg.DBType {
@@ -78,26 +76,15 @@ func NewApp(testing bool) (*Application, error) {
 	case "bolt":
 		var db *bolt.DB
 		var err error
-		switch testing {
-		case true:
-			// init boltDB
-			tmpfile, err := ioutil.TempFile("", databaseName)
-			if err != nil {
-				return nil, fmt.Errorf("%s", err)
-			}
-			defer os.Remove(tmpfile.Name())
-			db, err = bolt.Open(tmpfile.Name(), 0660, nil)
-			if err != nil {
-				return nil, fmt.Errorf("%s", err)
-			}
-		default:
-			if err := os.MkdirAll(path.Join(utils.GetDefaultBaseDir(), app.Cfg.DBDirectory), 0777); err != nil && !os.IsExist(err) {
-				return nil, err
-			}
-			db, err = bolt.Open(fmt.Sprintf("%s/%s", app.Cfg.DBDirectory, databaseName), 0660, nil)
-			if err != nil {
-				return nil, err
-			}
+		if testing {
+			app.Cfg.BaseDir = baseDir
+		}
+		if err := os.MkdirAll(path.Join(app.Cfg.BaseDir, app.Cfg.DBDirectory), 0777); err != nil && !os.IsExist(err) {
+			return nil, err
+		}
+		db, err = bolt.Open(path.Join(app.Cfg.BaseDir, fmt.Sprintf("%s/%s", app.Cfg.DBDirectory, databaseName)), 0660, nil)
+		if err != nil {
+			return nil, err
 		}
 		app.Datamapper, err = boltmapper.NewBoltDatamapper(db)
 		if err != nil {
